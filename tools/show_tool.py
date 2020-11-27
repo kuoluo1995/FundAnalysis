@@ -1,5 +1,4 @@
 from collections import Counter
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -27,7 +26,7 @@ def pie_chart(list_value, label_dict, title):
     print('\r{}: 饼状图绘制完毕'.format(title))
 
 
-def bar(labels, values, title, re_size=True, align='edge'):
+def bar(labels, values, title, re_size=True, align='edge', save_path=None):
     # 显示高度
     if re_size:
         plt.figure(figsize=(len(values) // 6, 6))
@@ -40,13 +39,17 @@ def bar(labels, values, title, re_size=True, align='edge'):
     rects = plt.bar(labels, values, color=colors, align=align)
     plt.xticks(labels, labels, rotation=-90)
     auto_label(rects)
+    plt.gcf().subplots_adjust(bottom=0.21)
     plt.title(title)
-    plt.savefig(SavePath + '{}_bar.png'.format(title))
+    if save_path is None:
+        plt.savefig(SavePath + '{}_bar.png'.format(title))
+    else:
+        plt.savefig(save_path)
     plt.show()
 
 
 def bar_chart(list_value, title, has_nan=False, has_none=False, has_nat=False, need_zero=False, gap=None, num_gap=None,
-              value_sort=False, is_long=True):
+              value_sort=False, is_long=True, save_path=None, align='center'):
     # 将数组等分
     print('{}: 开始画柱状图'.format(title), end='', flush=True)
     # print('{}: 开始画柱状图'.format(title), flush=True)
@@ -94,5 +97,62 @@ def bar_chart(list_value, title, has_nan=False, has_none=False, has_nat=False, n
     for _k, _v in value_dict.items():
         labels.append(str(_k))
         values.append(_v)
-    bar(labels, values, title, re_size=is_long, align='center')
+    bar(labels, values, title, re_size=is_long, align=align, save_path=save_path)
     print('\r{}: 柱状图绘制完毕                                   '.format(title))
+
+
+def object_merge_fund(_dict, merge_type, sort_type=None):
+    object_date_value = {}
+    for id_name, funds in _dict.items():
+        object_date_value[id_name] = {}
+        for f_id, values in funds.items():
+            for _date, _value in values.items():
+                if _date not in object_date_value[id_name]:
+                    object_date_value[id_name][_date] = []
+                object_date_value[id_name][_date].append(_value)
+    for id_name, values in object_date_value.items():
+        for _date, _value in values.items():
+            if merge_type == 'sum':
+                object_date_value[id_name][_date] = np.sum(_value)
+            elif merge_type == 'mean':
+                object_date_value[id_name][_date] = np.mean(_value)
+            elif merge_type == 'weight':
+                object_date_value[id_name][_date] = np.sum(np.array(_value))
+        if sort_type is not None:
+            if sort_type == 'key':
+                date_values = sorted(object_date_value[id_name].items(), key=lambda d: int(d[0]), reverse=False)
+            elif sort_type == 'value':
+                date_values = sorted(object_date_value[id_name].items(), key=lambda d: d[1], reverse=True)
+            else:
+                print('error: sort_type={}'.format(sort_type))
+            object_date_value[id_name] = {}
+            for _date, _value in date_values:
+                object_date_value[id_name][_date] = _value
+    return object_date_value
+
+
+def dict2labels(_dict, is_sort=True):
+    all_labels = set()
+    for _, date_value in _dict.items():
+        all_labels.update(date_value.keys())
+    all_labels = list(all_labels)
+    if is_sort:
+        all_labels = sorted(list(all_labels), key=lambda d: int(d), reverse=False)
+    return all_labels
+
+
+def dict2values(_dict, all_labels, none_value='zero'):
+    dict_values = {}
+    for id_name, date_value in _dict.items():
+        dict_values[id_name] = []
+        for _date in all_labels:
+            if _date in date_value:
+                dict_values[id_name].append(date_value[_date])
+            else:
+                if len(dict_values[id_name]) == 0 or none_value == 'zero':
+                    dict_values[id_name].append(0)
+                elif none_value == 'previous':
+                    dict_values[id_name].append(dict_values[id_name][-1])
+                else:
+                    print('error')
+    return dict_values

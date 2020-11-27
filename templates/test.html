@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script src="../node_modules/echarts/echarts.all.js"></script>
+</head>
+<body>
+<h2>查询基金经理管理的基金</h2>
+<div>
+    <form action="/get_manager_times" method="post">
+        <textarea id="m_ids" name="m_ids">{{manager_ids}}</textarea>
+        <label for="m_ids">(基金经理id，用,隔开)</label>
+        <input type="submit" value="查询">
+    </form>
+</div>
+<h2>查询固定时间内基金经理收益率排名</h2>
+<div>
+    <form action="/get_manager_rank" method="post">
+        <div>
+            <textarea id="2m_ids" name="m_ids">{{manager_ids}}</textarea>
+            <label for="2m_ids">(基金经理id，用,隔开)</label>
+        </div>
+        <div>
+            <input id="start_time" name="start_date" value="{{start_date}}">
+            <label for="start_time">(开始时间)</label>
+        </div>
+        <div>
+            <input id="end_time" name="end_date" value="{{end_date}}">
+            <label for="end_time">(结束时间)</label>
+        </div>
+        <input type="submit" value="查询">
+    </form>
+</div>
+<div id="main" style="width: 600px;height:400px;"></div>
+
+<!--<form action="/show_fund" method="post">-->
+<!--    <label for="f_ids">展示通过基金id查询:</label>-->
+<!--    <input id="f_ids" name="f_ids" value="">-->
+<!--    <input type="submit" value="查询基金具体内容">-->
+<!--</form>-->
+<div>
+    <h2>结果: <button type="button" onclick="show()">结构化</button></h2>
+    <div><img src="{{image_path}}"></div>
+    <pre id="message">{{message}}</pre>
+</div>
+<script type="text/javascript">
+    function show() {
+        var _content = document.getElementById('message').innerText; //获取json格式内容
+        _json = JSON.parse(_content);
+        _content = JSON.stringify(_json, null, 2);//将字符串转换成json对象
+        document.getElementById('message').innerText = _content;
+    }
+</script>
+</body>
+</html>
