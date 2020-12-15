@@ -21,16 +21,35 @@ def get_fund_date_sector(fund_ids):
     return fund_dict
 
 
-def get_fund_date_income(fund_ids, start_date, end_date):
+def get_fund_date_income(fund_ids, start_date=None, end_date=None):
     fund_dict = {}
     for f_id in fund_ids:
         fund_dict[f_id] = {}
         first_nav = None
         for nav_dict in common.fund_data_dict[f_id]['nav']:
-            if int(start_date) <= int(nav_dict['datetime']) <= int(end_date):
+            if (start_date is None and end_date is None) or \
+                    (start_date is None and int(nav_dict['datetime']) <= int(end_date)) or \
+                    (end_date is None and int(start_date) <= int(nav_dict['datetime'])) or \
+                    int(start_date) <= int(nav_dict['datetime']) <= int(end_date):
                 if first_nav is None:
                     first_nav = nav_dict['unit_net_value']
-                fund_dict[f_id][nav_dict['datetime']] = (nav_dict['unit_net_value'] / first_nav - 1) * 100
+                fund_dict[f_id][nav_dict['datetime']] = round((nav_dict['unit_net_value'] / first_nav - 1) * 100, 2)  # todo
+    return fund_dict
+
+
+def get_fund_time_nav(fund_ids, start_date=None, end_date=None, nav_type='unit_net_value'):
+    fund_dict = {}
+    for f_id in fund_ids:
+        fund_dict[f_id] = {}
+        first_nav = None
+        for nav_dict in common.fund_data_dict[f_id]['nav']:
+            if (start_date is None and end_date is None) or \
+                    (start_date is None and int(nav_dict['datetime']) <= int(end_date)) or \
+                    (end_date is None and int(start_date) <= int(nav_dict['datetime'])) or \
+                    int(start_date) <= int(nav_dict['datetime']) <= int(end_date):
+                if first_nav is None:
+                    first_nav = nav_dict[nav_type]
+                fund_dict[f_id][nav_dict['datetime']] = nav_dict[nav_type]
     return fund_dict
 
 

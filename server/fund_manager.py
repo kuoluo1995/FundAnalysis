@@ -55,7 +55,11 @@ def get_manager_nav(m_ids):
     return get_manager_dict(m_ids, 'nav', 'unit_net_value')
 
 
-def get_manager_income(m_ids, start_date, end_date=None):
+def get_manager_acc_net(m_ids):
+    return get_manager_dict(m_ids, 'nav', 'acc_net_value')
+
+
+def get_manager_income(m_ids, start_date=None, end_date=None):
     manager_income = {}
     for m_id in m_ids:
         _key = m_id + ' ' + common.fund_manager[m_id]['name']
@@ -65,8 +69,10 @@ def get_manager_income(m_ids, start_date, end_date=None):
             manager_income[_key][f_id] = {}
             for _value in _values:
                 for _nav in _value['nav']:
-                    if int(start_date) <= int(_nav['datetime']) and (
-                            end_date is None or int(_nav['datetime']) <= int(end_date)):
+                    if (start_date is None and end_date is None) or \
+                            (start_date is None and int(_nav['datetime']) <= int(end_date)) or \
+                            (end_date is None and int(start_date) <= int(_nav['datetime'])) or \
+                            int(start_date) <= int(_nav['datetime']) <= int(end_date):
                         if first_nav is None:
                             first_nav = _nav['unit_net_value']
                         manager_income[_key][f_id][_nav['datetime']] = (_nav['unit_net_value'] / first_nav - 1) * 100

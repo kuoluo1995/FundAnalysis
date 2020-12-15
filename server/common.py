@@ -9,6 +9,7 @@ for fund in fund_data:
     fund_data_dict[fund['fund_id']] = {**fund}
 with open(ProjectPath + '/data/fund_manager.json', 'r') as wp:
     fund_manager = json.load(wp)
+
 with open(ProjectPath + '/data/stock_concept_sector.json', 'r') as rp:
     stock_concept_sector = json.load(rp)
 stock_sector = {}
@@ -25,6 +26,30 @@ def check_time(_attr, start_date, end_date, str_date):
             continue
         _list.append(_v)
     return _list
+
+
+from enum import Enum
+
+
+class Interval(Enum):
+    Daily = 'daily'
+    Week = 'week'
+    Month = 'month'
+    Year = 'year'
+    Total = 'total'
+
+    @staticmethod
+    def format_date(_type, date):
+        if _type == Interval.Daily:
+            return date
+        elif _type == Interval.Month:
+            return date[:6]
+        elif _type == Interval.Year:
+            return date[:4]
+        elif _type == Interval.Total:
+            return 'total'
+        else:
+            print('interval enum:error')
 
 
 def build_fund_manager_dict(fund_data):
@@ -66,4 +91,6 @@ if __name__ == '__main__':
     # fund_manager = build_fund_manager_dict(fund_data)
     # with open(ProjectPath + '/data/fund_manager.json', 'w') as wp:
     #     json.dump(fund_manager, wp)
+    with open(ProjectPath + '/data/fund_data_dict.json', 'w') as wp:
+        json.dump(fund_data_dict, wp)
     print('init')
