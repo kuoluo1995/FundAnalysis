@@ -71,16 +71,9 @@ def get_manager_income():
 
 @app.route('/get_manager_sector', methods=['POST'])
 def get_manager_sector():
-    # m_ids = request.form['m_ids'].strip()
-    # if m_ids[0] == '[':
-    #     m_ids = m_ids[1:]
-    # if m_ids[-1] == ']':
-    #     m_ids = m_ids[0:-1]
-    # m_ids = m_ids.split(',')
     m_ids = request.get_json()['m_ids']
-    manager_sector_dict = fund_manager.get_manager_sector(m_ids)
-    manager_sector = fund_manager.object_merge_fund(manager_sector_dict, merge_type='sum', sort_type='value')
-    return manager_sector
+    manager_date_sector_dict = fund_manager.get_manager_date_sector(m_ids)
+    return manager_date_sector_dict
 
 
 @app.route('/get_market_nav_distribution', methods=['POST'])
