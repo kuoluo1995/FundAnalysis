@@ -48,7 +48,7 @@ for k_date, v in res.items():
     for k_id, value in v.items():
         data[year][k_date].append(value['nav_avg'])
 
-for k,v in data.items(): #处理每一年的数据
+for k,v in data.items():  # 处理每一年的数据
     if k not in nav_distribution_byMonth:
         nav_distribution_byMonth[k] = {}
     for month,values in data.get(k).items():
@@ -56,7 +56,7 @@ for k,v in data.items(): #处理每一年的数据
             nav_distribution_byMonth[k][month] = {}
             distribution(values, k, month)
 
-with open(ProjectPath + '/data/nav_distribution_byMonth.json', 'w') as wp:
+with open(ProjectPath + '/data/explore/nav_distribution_byMonth.json', 'w') as wp:
     json.dump(nav_distribution_byMonth, wp)
 
 print('over')
