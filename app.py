@@ -1,6 +1,5 @@
 import json
-
-from flask import Flask, url_for, redirect, render_template, request
+from flask import Flask, request
 from flask_cors import CORS
 from server import fund_manager, fund_market, fund_data
 
@@ -17,15 +16,9 @@ def index():
 
 @app.route('/get_manager_times', methods=['POST'])
 def get_manager_times():
-    m_ids = request.form['m_ids'].strip()
-    if m_ids[0] == '[':
-        m_ids = m_ids[1:]
-    if m_ids[-1] == ']':
-        m_ids = m_ids[0:-1]
-    m_ids = m_ids.split(',')
+    m_ids = request.get_json()['m_ids']
     m_datetime, start_date, end_date = fund_manager.get_manager_times(m_ids)
-    return render_template('test.html', message=json.dumps(m_datetime), start_date=start_date, end_date=end_date,
-                           manager_ids=request.form['m_ids'].strip())
+    return {'start_date': start_date, 'end_date': end_date}
 
 
 @app.route('/get_manager_nav', methods=['POST'])
@@ -44,7 +37,7 @@ def get_manager_acc_net():
 
 @app.route('/get_manager_asset', methods=['POST'])
 def get_manager_asset():
-    m_ids = request.form['m_ids'].strip()
+    m_ids = request.get_json()['m_ids']
     manager_asset = fund_manager.get_manager_asset(m_ids)
     return manager_asset
 
@@ -56,20 +49,11 @@ def get_manager_asset_value():
     return manager_asset
 
 
-@app.route('/get_manager_income', methods=['POST'])
-def get_manager_income():
-    m_ids = request.get_json()['m_ids']
-    start_date = request.get_json()['start_date'][0]
-    manager_income = fund_manager.get_manager_income(m_ids, start_date)
-    return manager_income
-
-
 @app.route('/get_manager_sector', methods=['POST'])
 def get_manager_sector():
     m_ids = request.get_json()['m_ids']
-    manager_sector_dict = fund_manager.get_manager_sector(m_ids)
-    manager_sector = fund_manager.object_merge_fund(manager_sector_dict, merge_type='sum', sort_type='value')
-    return manager_sector
+    manager_date_sector_dict = fund_manager.get_manager_date_sector(m_ids)
+    return manager_date_sector_dict
 
 
 @app.route('/get_market_nav_distribution', methods=['POST'])
@@ -101,13 +85,12 @@ def get_fund_sector():
     return fund_date_sector
 
 
-@app.route('/get_fund_income_rate', methods=['POST'])
-def get_fund_income_rate():
+@app.route('/get_fund_nav', methods=['POST'])
+def get_fund_nav():
     f_id = request.get_json()['f_ids']
-    min_start_date, max_end_date = fund_data.get_fund_time_border(f_id)
-    fund_date_income = fund_data.get_fund_date_income(f_id, min_start_date, max_end_date)
-    return fund_date_income
+    fund_date_nav = fund_data.get_fund_dict(f_id, 'unit_net_value')
+    return fund_date_nav
 
 
 if __name__ == '__main__':
-    app.run(host='10.76.0.165', port='5000')
+    app.run(host='10.76.0.165', port='5001')

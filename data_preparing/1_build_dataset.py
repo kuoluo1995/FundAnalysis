@@ -5,6 +5,10 @@ import time
 funds = []
 
 DATAPath = '/home/kuoluo/data/fund'
+
+# with open(DATAPath + '/stock_concept_sector.json', 'r') as fp:
+#     stock_concept_sector = json.load(fp)
+
 fund_files = os.listdir(DATAPath + '/full_fund_data')
 fund_files = set(fund_files)
 for z, _file in enumerate(fund_files):
@@ -56,14 +60,10 @@ for z, _file in enumerate(fund_files):
             temp_list.append({'datatime': key, 'industry_allocation': value})
     json_data.pop('industry_allocation')
     json_data['industry_allocation_records'] = temp_list
-    temp_list = []
-    json_data['rating'] = json_data['rating']['data'] if 'data' in json_data['rating'] else json_data['rating']
-    for i, asset in enumerate(json_data['rating']):
-        json_data['rating'][i].pop('order_book_id')
-        json_data['rating'][i]['datetime'] = json_data['rating'][i]['datetime'][:10].replace('-', '')
-        if int(json_data['rating'][i]['datetime']) <= end_date:
-            temp_list.append(json_data['rating'][i])
-    json_data['rating'] = temp_list
+    json_data.pop('rating')
+    # json_data['rating'] = json_data['rating']['data'] if 'data' in json_data['rating'] else json_data['rating']
+    # for i, asset in enumerate(json_data['rating']):
+    #     json_data['rating'][i].pop('order_book_id')
     json_data['holder_structure'] = json_data['holder_structure']['data'] if 'data' in json_data[
         'holder_structure'] else json_data['holder_structure']
     temp_list = []

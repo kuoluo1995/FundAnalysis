@@ -16,6 +16,21 @@ stock_sector = {}
 for stock_index, value in stock_concept_sector.items():
     stock_sector[stock_index[:6]] = value['sector']
 
+with open(ProjectPath + '/data/good_funds.json', 'r') as fp:
+    fund_data_values = json.load(fp)
+
+
+def distribution(total_list, year, month, nav_distribution_byMonth):
+    countblock = 21
+    intervals = {'%.1f~%.1f' % (0 + 0.2 * x, 0 + 0.2 * (x + 1)): 0 for x in range(countblock)}
+    for ls in total_list:
+        for interval in intervals:
+            start, end = tuple(interval.split('~'))
+            if float(start) <= ls <= float(end):
+                intervals[interval] += 1
+    for i in intervals:
+        nav_distribution_byMonth[year][month][i] = intervals[i]
+
 
 def check_time(_attr, start_date, end_date, str_date):
     _list = list()

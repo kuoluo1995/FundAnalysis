@@ -4,6 +4,7 @@ import re
 import threading
 from collections import Counter
 import sys
+
 sys.path.append('/home/kuoluo/projects/FundAnalysis/')
 from tools.show_tool import pie_chart, bar_chart
 
@@ -62,6 +63,7 @@ for fund in fund_data:
             if key not in records_args['nav']:
                 records_args['nav'][key] = []
             records_args['nav'][key].append(value)
+
     # for _records in fund['rating']:
     #     for key, value in _records.items():
     #         if key not in records_args['rating']:
@@ -88,6 +90,7 @@ for fund in fund_data:
 # end_date = [int(_) for _ in records_args['manager_records']['end_date']]
 # bar_chart(end_date, 'end_date', has_nat=True, need_zero=True, num_gap=100)
 # bar_chart(records_args['manager_records']['return'], 'return', has_nan=True, num_gap=300)
+
 # pie_chart(records_args['manager_records']['title'],
 #           {'基金经理': '基金经理', '基金经理助理': '基金经理助理'}, 'manager_title')
 # asset_datetime = [int(_) for _ in records_args['asset_allocation_records']['datetime']]
@@ -165,6 +168,7 @@ bar_chart(records_args['nav']['weekly_yield'], 'weekly_yield', has_none=True, ga
 # 多线程绘制
 # threads = list()
 # threads.append(threading.Thread(target=bar_chart,
+
 #                                 kwargs={'list_value': nav_datetime, 'title': 'nav_datetime', 'need_zero': True,
 #                                         'num_gap': 100}))
 # threads.append(threading.Thread(target=bar_chart,
@@ -228,6 +232,7 @@ bar_chart(records_args['nav']['weekly_yield'], 'weekly_yield', has_none=True, ga
 # threads.append(threading.Thread(target=bar_chart,
 #                                 kwargs={'list_value': records_args['instrument_category']['category'],
 #                                         'title': 'instrument_category', 'has_nan': True, 'value_sort': True}))
+
 # for _t in threads:
 #     _t.start()
 

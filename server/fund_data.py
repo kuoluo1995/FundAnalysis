@@ -33,7 +33,17 @@ def get_fund_date_income(fund_ids, start_date=None, end_date=None):
                     int(start_date) <= int(nav_dict['datetime']) <= int(end_date):
                 if first_nav is None:
                     first_nav = nav_dict['unit_net_value']
-                fund_dict[f_id][nav_dict['datetime']] = round((nav_dict['unit_net_value'] / first_nav - 1) * 100, 2)  # todo
+                fund_dict[f_id][nav_dict['datetime']] = round((nav_dict['unit_net_value'] / first_nav - 1) * 100,
+                                                              2)  # todo
+    return fund_dict
+
+
+def get_fund_dict(fund_ids, key):
+    fund_dict = {}
+    for f_id in fund_ids:
+        fund_dict[f_id] = {}
+        for nav_dict in common.fund_data_dict[f_id]['nav']:
+            fund_dict[f_id][nav_dict['datetime']] = nav_dict[key]
     return fund_dict
 
 
@@ -65,7 +75,15 @@ def get_fund_time_border(fund_ids):
 
 
 if __name__ == '__main__':
+    # fund_3 test
+    min_start_date, max_end_date = get_fund_time_border(['163402'])
+    fund_date_income = get_fund_dict(['163402'], 'unit_net_value')
+
     fund_ids = common.fund_data_dict.keys()
+    print('start')
+    min_start_date, max_end_date = get_fund_time_border(['510310'])
+    fund_date_income = get_fund_date_income(['510310'], min_start_date, max_end_date)
+
     min_start_date, max_end_date = get_fund_time_border(fund_ids)
     fund_date_sector = get_fund_date_sector(fund_ids)
     fund_date_income = get_fund_date_income(fund_ids, min_start_date, max_end_date)

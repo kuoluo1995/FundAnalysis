@@ -34,6 +34,7 @@ def get_return(date_navs, start_date, end_date=None, interval=Interval.Daily):
         date_incomes[_date] /= first_nav
     return date_incomes
 
+
 def get_sharpe_ratio():
     year_list = []
     month_list = []
@@ -52,7 +53,7 @@ def get_sharpe_ratio():
     df_year = df.groupby(['year']).sum()
     del df_year['month']
     round(df_year['rtn'].mean() / df_year['rtn'].std(), 3)
-    #由于我们要计算的是年化的值，所以收益率要乘以2，波动率要乘以[公式]（一年是半年的2倍）。
+    # 由于我们要计算的是年化的值，所以收益率要乘以2，波动率要乘以[公式]（一年是半年的2倍）。
     # 生成每年的收益数据df_year（对数收益率可以直接相加）
     df_year = df.groupby(['year']).sum()
     del df_year['month']

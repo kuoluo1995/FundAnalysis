@@ -99,6 +99,29 @@ def get_manager_sector(m_ids):
     return manager_dict
 
 
+def get_manager_date_sector(m_ids):
+    manager_dict = {}
+    for m_id in m_ids:
+        _key = m_id + ' ' + common.fund_manager[m_id]['name']
+        manager_dict[_key] = {}
+        for f_id, _values in common.fund_manager[m_id]['funds'].items():
+            for _value in _values:
+                for _quarter, holding_list in _value['holding_records'].items():
+                    if _quarter not in manager_dict[_key]:
+                        manager_dict[_key][_quarter] = {}
+                    if f_id not in manager_dict[_key][_quarter]:
+                        manager_dict[_key][_quarter][f_id] = {}
+                    for holding in holding_list:
+                        if holding['order_book_id'][:6] not in common.stock_sector:
+                            _sector = '未知'
+                        else:
+                            _sector = common.stock_sector[holding['order_book_id'][:6]]
+                        if _sector not in manager_dict[_key][_quarter][f_id]:
+                            manager_dict[_key][_quarter][f_id][_sector] = 0
+                        manager_dict[_key][_quarter][f_id][_sector] += holding['market_value']
+    return manager_dict
+
+
 if __name__ == '__main__':
     manager_name_dict = get_manager_name()
     manager_time_dict, start_date, end_date = get_manager_times(manager_name_dict.keys())
