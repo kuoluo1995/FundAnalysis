@@ -5,7 +5,7 @@ import numpy as np
 def get_market_nav_distribution():
     nav_distribution_byMonth = {}
     res = {}
-    for record in common.fund_data_values:
+    for record in common.fund_data:
         for nav_data in record['nav']:
             key = nav_data['datetime'][0:6]
             fund_id = record['fund_id']

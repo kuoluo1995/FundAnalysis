@@ -42,13 +42,6 @@ def get_manager_asset():
     return manager_asset
 
 
-@app.route('/get_manager_asset_value', methods=['POST'])
-def get_manager_asset_value():
-    m_ids = request.get_json()['m_ids']
-    manager_asset = fund_manager.get_manager_asset(m_ids)
-    return manager_asset
-
-
 @app.route('/get_manager_sector', methods=['POST'])
 def get_manager_sector():
     m_ids = request.get_json()['m_ids']
@@ -56,24 +49,24 @@ def get_manager_sector():
     return manager_date_sector_dict
 
 
-@app.route('/get_market_nav_distribution', methods=['POST'])
-def get_market_nav_distribution():
+@app.route('/get_market_unit_nav', methods=['POST'])
+def get_market_unit_nav():
     # nav_distribution_value = fund_market.get_market_nav_distribution() 实时的读取
-    with open('/home/kuoluo/projects/FundAnalysis/data/explore/nav_distribution_value.json', 'r') as fp:
-        nav_distribution_value = json.load(fp)
-    return nav_distribution_value
+    with open('data/explore/nav_distribution_value.json', 'r', encoding='UTF-8') as fp:
+        unit_nav = json.load(fp)
+    return unit_nav
 
 
-@app.route('/get_market_asset_distribution', methods=['POST'])
-def get_market_asset_distribution():
-    with open('/home/kuoluo/projects/FundAnalysis/data/explore/asset_distribution_byQuarter_value.json', 'r') as fp:
-        asset_distribution_byQuarter_value = json.load(fp)
-    return asset_distribution_byQuarter_value
+@app.route('/get_market_asset', methods=['POST'])
+def get_market_asset():
+    with open('data/explore/asset_distribution_byQuarter_value.json', 'r', encoding='UTF-8') as fp:
+        asset = json.load(fp)
+    return asset
 
 
 @app.route('/get_market_sector', methods=['POST'])
 def get_market_sector():
-    with open('/home/kuoluo/projects/FundAnalysis/data/explore/sector_date_value.json', 'r') as fp:
+    with open('data/explore/sector_date_value.json', 'r', encoding='UTF-8') as fp:
         market_sector_value = json.load(fp)
     return market_sector_value
 

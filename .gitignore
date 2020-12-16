@@ -69,3 +69,4 @@ fabric.properties
 data/*.json
 data_collecting/*
 images
+node_modules

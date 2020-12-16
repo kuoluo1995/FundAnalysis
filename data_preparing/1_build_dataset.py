@@ -60,7 +60,7 @@ for z, _file in enumerate(fund_files):
             temp_list.append({'datatime': key, 'industry_allocation': value})
     json_data.pop('industry_allocation')
     json_data['industry_allocation_records'] = temp_list
-    json_data.pop('rating')
+    # json_data.pop('rating')
     # json_data['rating'] = json_data['rating']['data'] if 'data' in json_data['rating'] else json_data['rating']
     # for i, asset in enumerate(json_data['rating']):
     #     json_data['rating'][i].pop('order_book_id')

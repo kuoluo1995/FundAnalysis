@@ -2,7 +2,7 @@ import json
 import numpy as np
 
 ProjectPath = '/home/kuoluo/projects/FundAnalysis'
-with open('/home/kuoluo/data/fund/fund_data.json', 'r') as fp:
+with open('/home/kuoluo/data/fund/fund_data.json', 'r', encoding='UTF-8') as fp:
     fund_data = json.load(fp)
 
 good_fund = []
@@ -56,11 +56,11 @@ for fund in fund_data:
         if int(_record['datetime']) <= new_date:
             temp_list.append(_record)
     fund['nav'] = temp_list
-    temp_list = list()
-    for _record in fund['rating']:
-        if int(_record['datetime']) <= new_date:
-            temp_list.append(_record)
-    fund['rating'] = temp_list
+    # temp_list = list()
+    # for _record in fund['rating']:
+    #     if int(_record['datetime']) <= new_date:
+    #         temp_list.append(_record)
+    # fund['rating'] = temp_list
     temp_list = list()
     for _record in fund['holder_structure']:
         if int(_record['date']) <= new_date:

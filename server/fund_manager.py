@@ -79,26 +79,6 @@ def get_manager_income(m_ids, start_date=None, end_date=None):
     return manager_income
 
 
-def get_manager_sector(m_ids):
-    manager_dict = {}
-    for m_id in m_ids:
-        _key = m_id + ' ' + common.fund_manager[m_id]['name']
-        manager_dict[_key] = {}
-        for f_id, _values in common.fund_manager[m_id]['funds'].items():
-            manager_dict[_key][f_id] = {}
-            for _value in _values:
-                for _, holding_list in _value['holding_records'].items():
-                    for holding in holding_list:
-                        if holding['order_book_id'][:6] not in common.stock_sector:
-                            _sector = '未知'
-                        else:
-                            _sector = common.stock_sector[holding['order_book_id'][:6]]
-                        if _sector not in manager_dict[_key][f_id]:
-                            manager_dict[_key][f_id][_sector] = 0
-                        manager_dict[_key][f_id][_sector] += holding['market_value']
-    return manager_dict
-
-
 def get_manager_date_sector(m_ids):
     manager_dict = {}
     for m_id in m_ids:
@@ -106,19 +86,19 @@ def get_manager_date_sector(m_ids):
         manager_dict[_key] = {}
         for f_id, _values in common.fund_manager[m_id]['funds'].items():
             for _value in _values:
-                for _quarter, holding_list in _value['holding_records'].items():
-                    if _quarter not in manager_dict[_key]:
-                        manager_dict[_key][_quarter] = {}
-                    if f_id not in manager_dict[_key][_quarter]:
-                        manager_dict[_key][_quarter][f_id] = {}
+                for _date, holding_list in _value['holding_records'].items():
+                    if _date not in manager_dict[_key]:
+                        manager_dict[_key][_date] = {}
+                    if f_id not in manager_dict[_key][_date]:
+                        manager_dict[_key][_date][f_id] = {}
                     for holding in holding_list:
                         if holding['order_book_id'][:6] not in common.stock_sector:
                             _sector = '未知'
                         else:
                             _sector = common.stock_sector[holding['order_book_id'][:6]]
-                        if _sector not in manager_dict[_key][_quarter][f_id]:
-                            manager_dict[_key][_quarter][f_id][_sector] = 0
-                        manager_dict[_key][_quarter][f_id][_sector] += holding['market_value']
+                        if _sector not in manager_dict[_key][_date][f_id]:
+                            manager_dict[_key][_date][f_id][_sector] = 0
+                        manager_dict[_key][_date][f_id][_sector] += holding['market_value']
     return manager_dict
 
 
@@ -135,11 +115,6 @@ if __name__ == '__main__':
     manager_nav = object_merge_fund(manager_nav_dict, merge_type='mean', sort_type='key')
     all_labels = dict2labels(manager_nav, is_sort=True)
     value_dict = dict2values(manager_nav, all_labels, none_value='previous')
-    # 基金经理行业分布
-    manager_sector_dict = get_manager_sector(manager_name_dict.keys())
-    manager_sector = object_merge_fund(manager_sector_dict, merge_type='sum', sort_type='value')
-    all_labels = dict2labels(manager_sector, is_sort=False)
-    value_dict = dict2values(manager_sector, all_labels, none_value='zero')
     # 基金经理收益，按时间切片取出就可以直接看收益排行
     manager_income_dict = get_manager_income(manager_name_dict.keys(), start_date, end_date)
     manager_income = object_merge_fund(manager_income_dict, merge_type='mean', sort_type='key')

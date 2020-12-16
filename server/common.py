@@ -3,21 +3,18 @@ import json
 ProjectPath = '/home/kuoluo/projects/FundAnalysis'
 
 fund_data_dict = {}
-with open(ProjectPath + '/data/fund_date.json', 'r') as fp:
+with open(ProjectPath + '/data/fund_date.json', 'r', encoding='UTF-8') as fp:
     fund_data = json.load(fp)
 for fund in fund_data:
     fund_data_dict[fund['fund_id']] = {**fund}
-with open(ProjectPath + '/data/fund_manager.json', 'r') as wp:
+with open(ProjectPath + '/data/fund_manager.json', 'r', encoding='UTF-8') as wp:
     fund_manager = json.load(wp)
 
-with open(ProjectPath + '/data/stock_concept_sector.json', 'r') as rp:
+with open(ProjectPath + '/data/stock_concept_sector.json', 'r', encoding='UTF-8') as rp:
     stock_concept_sector = json.load(rp)
 stock_sector = {}
 for stock_index, value in stock_concept_sector.items():
     stock_sector[stock_index[:6]] = value['sector']
-
-with open(ProjectPath + '/data/good_funds.json', 'r') as fp:
-    fund_data_values = json.load(fp)
 
 
 def distribution(total_list, year, month, nav_distribution_byMonth):
