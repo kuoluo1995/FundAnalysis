@@ -1,6 +1,6 @@
 import copy
 import json
-from server import fund_market, fund_data, fund_manager, common
+from server import fund_market, fund_data, fund_manager, fund_company, common
 
 
 ProjectPath = '/home/kuoluo/projects/FundAnalysis/data/explore'
@@ -26,8 +26,8 @@ ProjectPath = '/home/kuoluo/projects/FundAnalysis/data/explore'
 
 # fund_data.py 基金
 # 2
-fund_ids = common.fund_data_dict.keys()
-fund_date_sector =fund_data.get_fund_date_sector(['100020'])
+# fund_ids = common.fund_data_dict.keys()
+# fund_date_sector =fund_data.get_fund_date_sector(['100020'])
 # with open(ProjectPath + '/fund_date_sector.json', 'w') as wp:
 #     json.dump(fund_date_sector, wp)
 
@@ -81,4 +81,19 @@ fund_date_sector =fund_data.get_fund_date_sector(['100020'])
 # manager_income_dict = fund_manager.get_manager_income(manager_name_dict.keys(), start_date, end_date)
 # with open(ProjectPath + '/manager_income_value.json', 'w') as wp:
 #     json.dump(manager_income_dict, wp)
+
+# fund_company 公司
+# 1 基金产品数量变化
+# all_date = fund_company.get_all_date()
+# company_date_fund_value = fund_company.get_company_date_fund(all_date)
+# with open(ProjectPath + '/company_date_fund_value.json', 'w') as wp:
+#     json.dump(company_date_fund_value, wp)
+# 2 基金经理数量变化
+# company_date_manager_value = fund_company.get_company_date_manager(all_date)
+# with open(ProjectPath + '/company_date_manager_value.json', 'w') as wp:
+#     json.dump(company_date_manager_value, wp)
+# 3 基金规模变化
+# company_date_asset_value = fund_company.get_company_date_asset()
+# with open(ProjectPath + '/company_date_asset_value.json', 'w') as wp:
+#     json.dump(company_date_asset_value, wp)
 print('over')

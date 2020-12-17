@@ -85,5 +85,29 @@ def get_fund_nav():
     return fund_date_nav
 
 
+@app.route('/get_company_fund_sum', methods=['POST'])
+def get_company_fund_sum():
+    c_name = request.get_json()['c_names'][0]
+    with open('/home/kuoluo/projects/FundAnalysis/data/explore/company_date_fund_value.json', 'r', encoding='UTF-8') as fp:
+        company_date_fund = json.load(fp)
+    return company_date_fund[c_name]
+
+
+@app.route('/get_company_manager_sum', methods=['POST'])
+def get_company_manager_sum():
+    c_name = request.get_json()['c_names'][0]
+    with open('/home/kuoluo/projects/FundAnalysis/data/explore/company_date_manager_value.json', 'r', encoding='UTF-8') as fp:
+        company_date_manager = json.load(fp)
+    return company_date_manager[c_name]
+
+
+@app.route('/get_company_date_asset', methods=['POST'])
+def get_company_date_asset():
+    c_name = request.get_json()['c_names'][0]
+    with open('/home/kuoluo/projects/FundAnalysis/data/explore/company_date_asset_value.json', 'r', encoding='UTF-8') as fp:
+        company_date_asset_value = json.load(fp)
+    return company_date_asset_value[c_name]
+
+
 if __name__ == '__main__':
     app.run(host='10.76.0.165', port='5001')
