@@ -1,12 +1,17 @@
 import numpy as np
 import sys
 import json
-from server import common
-from server import fund_market
+from server import common, fund_market, fund_data
 
 year = ['1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010',
 		'2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020']
 num = len(year) * [0]
+
+
+def sortByKey(v_dict):
+    v_keys = list(v_dict.keys())
+    v_keys.sort()
+    return dict(zip(v_keys, [v_dict[key] for key in v_keys]))
 
 
 def get_manager_num():
@@ -51,6 +56,30 @@ def get_fund_asset_change():
 	return fund_asset_change_dict
 
 
+def get_fund_avg_nav():
+	fund_ids = common.fund_data_dict.keys()
+	unit_net_value = fund_data.get_fund_dict(fund_ids, 'unit_net_value')
+	market_nav = {}
+	for fund_id, unit_net_values in unit_net_value.items():
+		fund_nav = {}
+		for date, unit_net_value in unit_net_values.items():
+			year = date[0:4]
+			if year not in fund_nav:
+				fund_nav[year] = []
+				first_unit_net_value = unit_net_value
+			fund_nav[year].append((unit_net_value/first_unit_net_value - 1) * 100)
+		for year, nav_values in fund_nav.items():
+			if year not in market_nav:
+				market_nav[year] = []
+			market_nav[year].append(np.mean(nav_values))
+	market_avg_nav_dict = {}
+	for year, values in market_nav.items():
+		if year not in market_avg_nav_dict:
+			market_avg_nav_dict[year] = 0
+		market_avg_nav_dict[year] = np.mean(values)
+	return sortByKey(market_avg_nav_dict)
+
+
 def get_company_manager_num():
 	company_manager_num_dict = {}
 	with open('/home/kuoluo/projects/FundAnalysis/data/explore/company_date_manager_value.json', 'r', encoding='UTF-8') as fp:
@@ -58,7 +87,7 @@ def get_company_manager_num():
 	for company_name, value in company_date_manager.items():
 		company_manager_num_dict[company_name] = {'max': -sys.maxsize - 1, 'min': sys.maxsize}
 		for date, managers in value.items():
-			manager_num = len(managers) # len ([]) == 0 ？
+			manager_num = len(managers)
 			if company_manager_num_dict[company_name].get('max') < manager_num:
 				company_manager_num_dict[company_name]['max'] = manager_num
 			if company_manager_num_dict[company_name].get('min') > manager_num:
@@ -66,13 +95,27 @@ def get_company_manager_num():
 	return company_manager_num_dict
 
 
+def get_company_manager_max_num():
+	max_num = -sys.maxsize - 1
+	company_manager_num_dict = get_company_manager_num()
+	for k, v in company_manager_num_dict.items():
+		if max_num < v['max']:
+			max_num = v['max']
+	return max_num
+
+
 if __name__ == '__main__':
-	print('manager_num: ' + str(get_manager_num()))
-	print('company_num: ' + str(get_company_num()))
-	print('fund_num_change: ', get_fund_num_change())
-	print('fund_asset_change: ', get_fund_asset_change())
-	print('company_manager_num: ', get_company_manager_num())
+	# print('manager_num: ' + str(get_manager_num()))
+	# print('company_num: ' + str(get_company_num()))
+	# print('fund_num_change: ', get_fund_num_change())
+	# print('fund_asset_change: ', get_fund_asset_change())
+	# print('fund_avg_nav: ', get_fund_avg_nav())
+	# print('company_manager_num: ', get_company_manager_num())
 
-
-
+	# with open('/home/kuoluo/projects/FundAnalysis/data/explore/count_data.txt', "a") as file:
+	# 	file.write('fund_avg_nav: ')
+	# 	file.write(json.dumps(get_fund_avg_nav()))
+	# with open('/home/kuoluo/projects/FundAnalysis/data/explore/count_data.txt', "a") as file:
+	# 	file.write('company_manager_num: ')
+	# 	file.write(json.dumps(get_company_manager_num()))
 	print('over')
