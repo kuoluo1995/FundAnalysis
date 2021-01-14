@@ -17,7 +17,7 @@ for stock_index, value in stock_concept_sector.items():
     stock_sector[stock_index[:6]] = value['sector']
 
 
-def distribution(total_list, year, month, nav_distribution_byMonth):
+def nav_distribution(total_list, year, month, nav_distribution_byMonth):
     countblock = 21
     intervals = {'%.1f~%.1f' % (0 + 0.2 * x, 0 + 0.2 * (x + 1)): 0 for x in range(countblock)}
     for ls in total_list:
@@ -27,6 +27,18 @@ def distribution(total_list, year, month, nav_distribution_byMonth):
                 intervals[interval] += 1
     for i in intervals:
         nav_distribution_byMonth[year][month][i] = intervals[i]
+
+
+def monthly_return_distribution(value, year, month, result):
+	countblock = 21
+	intervals = {'%.1f~%.1f' % (-90 + 10 * x, -90 + 10 * (x + 1)): 0 for x in range(countblock)}
+	for interval in intervals:
+		start, end = tuple(interval.split('~'))
+		if float(start) <= value <= float(end):
+			intervals[interval] += 1
+			break
+	for i in intervals:
+		result[year][month][i] = intervals[i]
 
 
 def check_time(_attr, start_date, end_date, str_date):
@@ -97,6 +109,12 @@ def build_fund_manager_dict(fund_data):
                         fund_record['holding_records'][_v['datetime']] = _v['holdings_list']
             manager_dict[m_id]['funds'][f_id].append(fund_record)
     return manager_dict
+
+
+def sortByKey(v_dict):
+    v_keys = list(v_dict.keys())
+    v_keys.sort()
+    return dict(zip(v_keys, [v_dict[key] for key in v_keys]))
 
 
 if __name__ == '__main__':

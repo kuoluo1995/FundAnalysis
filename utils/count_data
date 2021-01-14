@@ -8,12 +8,6 @@ year = ['1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', 
 num = len(year) * [0]
 
 
-def sortByKey(v_dict):
-    v_keys = list(v_dict.keys())
-    v_keys.sort()
-    return dict(zip(v_keys, [v_dict[key] for key in v_keys]))
-
-
 def get_manager_num():
 	manager_num = 0
 	for m_id, m_v in common.fund_manager.items():
@@ -77,7 +71,7 @@ def get_fund_avg_nav():
 		if year not in market_avg_nav_dict:
 			market_avg_nav_dict[year] = 0
 		market_avg_nav_dict[year] = np.mean(values)
-	return sortByKey(market_avg_nav_dict)
+	return common.sortByKey(market_avg_nav_dict)
 
 
 def get_company_manager_num():
