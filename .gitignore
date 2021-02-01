@@ -67,6 +67,7 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 data/*.json
+data/explore/*.json
 data_collecting/*
 images
 node_modules
