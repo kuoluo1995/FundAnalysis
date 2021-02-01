@@ -57,6 +57,22 @@ def get_market_unit_nav():
     return unit_nav
 
 
+@app.route('/get_market_return', methods=['POST'])
+def get_market_return():
+    # monthly_return_distribution_value = fund_market.get_market_monthly_return_distribution() 实时的读取
+    with open('/home/kuoluo/projects/FundAnalysis/data/explore/return_distribution_value.json', 'r', encoding='UTF-8') as fp:
+        return_distribution = json.load(fp)
+    return return_distribution
+
+
+@app.route('/get_market_avg_return', methods=['POST'])
+def get_market_avg_return():
+    # monthly_return_distribution_value = fund_market.get_market_monthly_return_distribution() 实时的读取
+    with open('/home/kuoluo/projects/FundAnalysis/data/explore/return_avg_value.json', 'r', encoding='UTF-8') as fp:
+        avg_return = json.load(fp)
+    return avg_return
+
+
 @app.route('/get_market_asset', methods=['POST'])
 def get_market_asset():
     with open('data/explore/asset_distribution_byQuarter_value.json', 'r', encoding='UTF-8') as fp:

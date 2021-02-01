@@ -1,5 +1,6 @@
-from server import common
+from server import common, fund_data
 import numpy as np
+import sys
 
 
 def get_market_nav_distribution():
@@ -32,7 +33,7 @@ def get_market_nav_distribution():
         for month, values in data.get(k).items():
             if month not in nav_distribution_byMonth[k]:
                 nav_distribution_byMonth[k][month] = {}
-                common.distribution(values, k, month, nav_distribution_byMonth)
+                common.nav_distribution(values, k, month, nav_distribution_byMonth)
     return nav_distribution_byMonth
 
 
@@ -59,7 +60,78 @@ def get_market_sector_value():
     return market_dict
 
 
+def get_market_monthly_return_distribution():
+	fund_ids = common.fund_data_dict.keys()
+	unit_net_value = fund_data.get_fund_dict(fund_ids, 'unit_net_value')
+	monthly_return_distribution = {}
+	for fund_id, unit_net_values in unit_net_value.items():
+		fund_nav = {}
+		for date, unit_net_value in unit_net_values.items():
+			year = date[0:4]
+			if year not in fund_nav:
+				fund_nav[year] = {}
+			month = date[0:6]
+			if month not in fund_nav[year]:
+				fund_nav[year][month] = 0
+				first_unit_net_value = unit_net_value
+			fund_nav[year][month] = (unit_net_value/first_unit_net_value - 1) * 100
+		for year, value in fund_nav.items():
+			if year not in monthly_return_distribution:
+				monthly_return_distribution[year] = {}
+			for month, return_value in value.items():
+				if month not in monthly_return_distribution[year]:
+					monthly_return_distribution[year][month] = {'%d~%d' % (-20 + 2 * x, -20 + 2 * (x + 1)): 0 for x in range(20)}
+				for interval in monthly_return_distribution[year][month]:
+					start, end = tuple(interval.split('~'))
+					if float(start) <= return_value <= float(end):
+						monthly_return_distribution[year][month][interval] += 1
+						break
+			monthly_return_distribution[year] = common.sortByKey(monthly_return_distribution[year])
+	monthly_return_distribution = common.sortByKey(monthly_return_distribution)
+	pre_year = None
+	for _year, _value in monthly_return_distribution.items():
+		if int(_year)<2000:
+			pre_year=_year
+			continue
+		monthly_return_distribution[pre_year][pre_year+'13'] = monthly_return_distribution[_year][_year+'01']
+		pre_year=_year
+	return monthly_return_distribution
+
+
+def get_market_monthly_avg_return():
+	fund_ids = common.fund_data_dict.keys()
+	unit_net_value = fund_data.get_fund_dict(fund_ids, 'unit_net_value')
+	monthly_avg_return = {}
+	for fund_id, unit_net_values in unit_net_value.items():
+		fund_nav = {}
+		for date, unit_net_value in unit_net_values.items():
+			year = date[0:4]
+			if year not in fund_nav:
+				fund_nav[year] = {}
+			month = date[0:6]
+			if month not in fund_nav[year]:
+				fund_nav[year][month] = 0
+				first_unit_net_value = unit_net_value
+			fund_nav[year][month] = (unit_net_value/first_unit_net_value - 1) * 100
+		for year, value in fund_nav.items():
+			if year not in monthly_avg_return:
+				monthly_avg_return[year] = {}
+			for month, return_value in value.items():
+				if month not in monthly_avg_return[year]:
+					monthly_avg_return[year][month] = []
+				monthly_avg_return[year][month].append(return_value)
+			monthly_avg_return[year] = common.sortByKey(monthly_avg_return[year])
+	monthly_avg_return = common.sortByKey(monthly_avg_return)
+	for _year, _values in monthly_avg_return.items():
+		for _month, _return_values in monthly_avg_return[_year].items():
+			monthly_avg_return[_year][_month] = round(np.mean(_return_values), 2)
+	return monthly_avg_return
+
+
 if __name__ == '__main__':
-    nav_distribution_value = get_market_nav_distribution()
-    sector_date_value = get_market_sector_value()
-    print('over')
+	# nav_distribution_value = get_market_nav_distribution()
+	# sector_date_value = get_market_sector_value()
+	# market_monthly_return_distribution_value = get_market_monthly_return_distribution()
+	market_monthly_avg_return_value = get_market_monthly_avg_return()
+
+	print('over')

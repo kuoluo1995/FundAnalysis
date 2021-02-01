@@ -23,6 +23,16 @@ ProjectPath = '/home/kuoluo/projects/FundAnalysis/data/explore'
 # with open(ProjectPath + '/nav_distribution_value.json', 'w') as wp:
 #     json.dump(nav_distribution_value, wp)
 
+# # market 收益率分布
+# monthly_return_distribution_value = fund_market.get_market_monthly_return_distribution()
+# with open(ProjectPath + '/return_distribution_value.json', 'w') as wp:
+#     json.dump(monthly_return_distribution_value, wp)
+
+# market 平均收益率 by month
+market_monthly_avg_return_value = fund_market.get_market_monthly_avg_return()
+with open(ProjectPath + '/return_avg_value.json', 'w') as wp:
+    json.dump(market_monthly_avg_return_value, wp)
+
 
 # fund_data.py 基金
 # 2
