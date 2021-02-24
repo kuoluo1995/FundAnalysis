@@ -1,4 +1,4 @@
-from collections import Counter
+from collections import Counter, defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -156,3 +156,27 @@ def dict2values(_dict, all_labels, none_value='zero'):
                 else:
                     print('error')
     return dict_values
+
+
+def normalize_dict_by_month(size_dict, _keys):
+    normalize_size = dict()
+    pre_size = None
+    for _date in _keys:
+        if _date in size_dict:
+            pre_size = size_dict[_date]
+        normalize_size[_date] = pre_size
+    return normalize_size
+
+
+def sort_interval(_dict, interval):
+    _list = sorted(_dict.items(), key=lambda v: v[1])
+    gap = (_list[-1][1] - _list[0][1]) / interval
+    result = defaultdict(list)
+    pre_value = _list[0][1]
+    _id = 0
+    for f_id, _v in _list:
+        if pre_value + gap < _v:
+            pre_value += gap
+            _id += 1
+        result[_id].append(f_id)
+    return result
