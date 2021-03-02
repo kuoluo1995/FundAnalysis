@@ -1,7 +1,7 @@
 import json
 from flask import Flask, request
 from flask_cors import CORS
-from server import fund_manager, fund_market, fund_data
+from server import fund_manager, fund_data
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)  # 支持跨域
@@ -85,6 +85,20 @@ def get_market_sector():
     with open('data/explore/sector_date_value.json', 'r', encoding='UTF-8') as fp:
         market_sector_value = json.load(fp)
     return market_sector_value
+
+
+@app.route('/get_market_sector_nav', methods=['POST'])
+def get_market_sector_nav():
+    with open('/home/kuoluo/projects/FundAnalysis/data/explore/market_sector_nav_value.json', 'r', encoding='UTF-8') as fp:
+        market_sector_nav_value = json.load(fp)
+    return market_sector_nav_value
+
+
+# @app.route('/get_market_sector_acc_net', methods=['POST'])
+# def get_market_sector_acc_net():
+#     with open('data/explore/market_sector_acc_net_value.json', 'r', encoding='UTF-8') as fp:
+#         market_sector_acc_net_value = json.load(fp)
+#     return market_sector_acc_net_value
 
 
 @app.route('/get_fund_sector', methods=['POST'])
