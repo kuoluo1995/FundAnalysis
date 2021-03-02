@@ -137,14 +137,15 @@ def get_fund_feature(fund_datas, max_size, min_nav_len):
         for _name, _v in _value.items():
             if _name == 'size':
                 x.append(_v / max_size)
-            elif _name == 'navs' or _name == 'risks':
+            elif _name == 'detail_unit_navs':
                 _v = list(_v.items())[-min_nav_len:]
                 for _d, _n in _v:
                     x.append(_n)
-            elif _name != 'manager_id':
+            elif _name != 'manager_ids' and _name != 'detail_acc_navs' and _name != 'detail_hs300s':
                 x.append(_v)
-            elif _name == 'manager_id':
-                y.append(_v)
+            elif _name == 'manager_ids':
+                for m_id, title in _v.items():
+                    y.append(m_id)
         features.append(x)
         clasz.append(y)
     return features, clasz
@@ -162,14 +163,15 @@ def update_features(features, clasz, funds, date, max_size, min_nav_len):
         for _name, _v in fund[date].items():
             if _name == 'size':
                 x.append(_v / max_size)
-            elif _name == 'navs' or _name == 'risks':
+            elif _name == 'detail_unit_navs':
                 _v = list(_v.items())[-min_nav_len:]
                 for _d, _n in _v:
                     x.append(_n)
-            elif _name != 'manager_id':
+            elif _name != 'manager_ids' and _name != 'detail_acc_navs' and _name != 'detail_hs300s':
                 x.append(_v)
-            elif _name == 'manager_id':
-                y.append(_v)
+            elif _name == 'manager_ids':
+                for m_id, title in _v.items():
+                    y.append(m_id)
         features[i] = x
         clasz[i] = y
         index_funds[i] = f_id

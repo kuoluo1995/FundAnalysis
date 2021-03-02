@@ -1,15 +1,15 @@
 import json
 import os
 
-DATAPath = '/home/kuoluo/data/fund'
-# DATAPath = 'E:/Dataset/fund'
+data_path = '/home/kuoluo/data/fund'
+# data_path = 'E:/Dataset/fund'
 
-fund_files = os.listdir(DATAPath + '/full_fund_data')
+fund_files = os.listdir(data_path + '/full_fund_data')
 fund_files = set(fund_files)
 start_date = 19950101
 end_date = 20191231
 for z, _file in enumerate(fund_files):
-    with open(DATAPath + '/full_fund_data/' + _file, 'r') as fp:
+    with open(data_path + '/full_fund_data/' + _file, 'r') as fp:
         json_data = json.load(fp)
     json_data.pop('benchmark')
     json_data['manager_records'] = json_data['manager_records']['data'] if 'data' in json_data['manager_records'] else \
@@ -24,7 +24,7 @@ for z, _file in enumerate(fund_files):
         else:
             manager_record['end_date'] = manager_record['end_date'][:10].replace('-', '')
         if int(manager_record['end_date']) > end_date:
-            continue
+            manager_record['end_date'] = str(end_date)
         temp_list.append(manager_record)
     json_data['manager_records'] = temp_list
     temp_list = []
@@ -65,9 +65,6 @@ for z, _file in enumerate(fund_files):
     # json_data.pop('industry_allocation')
     # json_data['industry_allocation_records'] = temp_list
     json_data.pop('rating')
-    # json_data['rating'] = json_data['rating']['data'] if 'data' in json_data['rating'] else json_data['rating']
-    # for i, asset in enumerate(json_data['rating']):
-    #     json_data['rating'][i].pop('order_book_id')
     json_data['holder_structure'] = json_data['holder_structure']['data'] if 'data' in json_data[
         'holder_structure'] else json_data['holder_structure']
     temp_list = []
@@ -101,7 +98,7 @@ for z, _file in enumerate(fund_files):
             _temp_list.append(holding)
         temp_list[holding_records['datetime']] = _temp_list
     json_data.pop('industry_allocation')
-    with open(DATAPath + '/perpared_fund/' + _file[:-5] + '.json', 'w') as wp:
+    with open(data_path + '/perpared_fund/' + _file[:-5] + '.json', 'w', encoding='UTF-8') as wp:
         json.dump(json_data, wp)
     print('\rprocessing: {}/{} {:.2f}%'.format(z + 1, len(fund_files), (z + 1) / len(fund_files) * 100), end='')
 print()
