@@ -27,7 +27,7 @@ def get_view_funds():
     start_date = _json['start_date']
     end_date = _json['end_date']
     details, summary = fund_data.get_view_fund(f_ids, start_date, end_date)
-    return {'detail': details, 'summary': summary}
+    return {'detail': details, 'total': summary}
 
 
 @app.route('/get_manager_fund_local', methods=['POST'])
@@ -50,7 +50,7 @@ def get_fund_ranks():
     _json = request.get_json()
     weights = _json['weights']
     fund_ids = fund_data.get_fund_ranks(weights)
-    return fund_data.get_fund_last_dict(fund_ids, list(weights.keys()))
+    return {'ranks': fund_data.get_fund_last_dict(fund_ids, list(weights.keys()))}
 
 
 if __name__ == '__main__':

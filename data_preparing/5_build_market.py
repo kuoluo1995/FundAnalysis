@@ -84,16 +84,16 @@ def get_market_fund_sector_by_report(files):
 
 
 sector_date, number_date, size_date, hs300_date, income_date, date_sector = get_market_fund_sector_by_report(fund_files)
-with open(project_path + '/data/temp/market_sector_date.json', 'w') as wp:
+with open(project_path + '/data/market/market_sector_date.json', 'w') as wp:
     json.dump(sector_date, wp)
-with open(project_path + '/data/temp/market_date_sector.json', 'w') as wp:
+with open(project_path + '/data/market/market_date_sector.json', 'w') as wp:
     json.dump(date_sector, wp)
-with open(project_path + '/data/temp/market_fund_number.json', 'w') as wp:
+with open(project_path + '/data/market/market_fund_number.json', 'w') as wp:
     json.dump(number_date, wp)
-with open(project_path + '/data/temp/market_fund_size.json', 'w') as wp:
+with open(project_path + '/data/market/market_fund_size.json', 'w') as wp:
     json.dump(size_date, wp)
-with open(project_path + '/data/temp/market_hs300.json', 'w') as wp:
+with open(project_path + '/data/market/market_hs300.json', 'w') as wp:
     json.dump(hs300_date, wp)
-with open(project_path + '/data/temp/market_fund_income.json', 'w') as wp:
+with open(project_path + '/data/market/market_fund_income.json', 'w') as wp:
     json.dump(income_date, wp)
 print('over')

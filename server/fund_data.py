@@ -208,7 +208,7 @@ def get_fund_ranks(weights):
         fund = common.global_fund_features[f_id]
         _sum = 0
         for _name, _v in weights.items():
-            _sum += weights[_name] * fund[_name]
+            _sum += float(weights[_name]) * fund[_name]
         funds[f_id] = _sum
     funds = sorted(funds.items(), key=lambda v: v[1], reverse=True)
     return [i for i, _ in funds]
@@ -234,8 +234,8 @@ if __name__ == '__main__':
     pre_f_id = '007590'
     for f_id in common.fund_ids:
         min_start_date, max_end_date = get_fund_time_border([f_id, pre_f_id])
-        _ = get_view_fund([f_id, pre_f_id], min_start_date, max_end_date)
-        result.update(_)
+        _detail, _last = get_view_fund([f_id, pre_f_id], min_start_date, max_end_date)
+        result[f_id] = {'detail': _detail[f_id], 'total': _last[f_id]}
         pre_f_id = f_id
     project_path = '/home/kuoluo/projects/FundAnalysis'
     for f_id, _value in result.items():

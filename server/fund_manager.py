@@ -56,6 +56,8 @@ def get_manager_feature(m_ids):
                         'amcs': common.manager_features[m_id]['amcs']}
     return result
 
+def get_manager_name():
+    pass
 
 # def get_manager_name():
 #     manager_dict = {}
