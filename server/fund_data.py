@@ -4,7 +4,7 @@ import numpy as np
 
 sys.path.append('/home/kuoluo/projects/FundAnalysis/')
 
-from server import common
+from server import common, fund_manager
 from models import tsne
 
 
@@ -231,31 +231,38 @@ def get_fund_last_dict(fund_ids, keys):
 
 if __name__ == '__main__':
     result = {}
-    pre_f_id = '007590'
-    for f_id in common.fund_ids:
-        min_start_date, max_end_date = get_fund_time_border([f_id, pre_f_id])
-        _detail, _last = get_view_fund([f_id, pre_f_id], min_start_date, max_end_date)
-        result[f_id] = {'detail': _detail[f_id], 'total': _last[f_id]}
-        pre_f_id = f_id
+    # project_path = 'E:/Projects/PythonProjects/FundAnalysis'
     project_path = '/home/kuoluo/projects/FundAnalysis'
-    for f_id, _value in result.items():
-        with open(project_path + '/data/temp/funds/' + f_id + '.json', 'w', encoding='UTF-8') as wp:
-            json.dump(_value, wp)
-    print('over')
-    # weights = {'stock': 1.0, 'bond': 1.0, 'cash': 1.0, 'other': 1.0, 'size': 1.0, 'alpha': 1.0, 'beta': 1.0,
-    #            'sharp_ratio': 1.0, 'max_drop_down': 1.0, 'information_ratio': 1.0, 'nav_return': 1.0, 'risk': 1.0,
-    #            'instl_weight': 1.0, 'car': 1.0}
+    # pre_f_id = '007590'
+    # for f_id in common.fund_ids:
+    #     min_start_date, max_end_date = get_fund_time_border([f_id, pre_f_id])
+    #     _detail, _last = get_view_fund([f_id, pre_f_id], min_start_date, max_end_date)
+    #     result[f_id] = {'detail': _detail[f_id], 'total': _last[f_id]}
+    #     pre_f_id = f_id
+    # for f_id, _value in result.items():
+    #     with open(project_path + '/data/temp/funds/' + f_id + '.json', 'w', encoding='UTF-8') as wp:
+    #         json.dump(_value, wp)
+    # print('over')
+    weights = {'stock': 1.0, 'bond': 1.0, 'cash': 1.0, 'other': 1.0, 'size': 1.0, 'alpha': 1.0, 'beta': 1.0,
+               'sharp_ratio': 1.0, 'max_drop_down': 1.0, 'information_ratio': 1.0, 'nav_return': 1.0, 'risk': 1.0,
+               'instl_weight': 1.0, 'car': 1.0}
     # fund_ids = get_fund_ranks(weights)
     # get_fund_last_dict(fund_ids, list(weights.keys()))
-    # m_ids = []
-    # for f_id in common.fund_ids[:10]:
-    #     m_ids += common.fund_manager_dict[f_id]
-    # f_ids = []
-    # for m_id in m_ids:
-    #     f_ids += common.manager_fund_dict[m_id]
-    # f_ids = list(set(f_ids))
-    # funds = get_fund_t_sne(f_ids)
-    # project_path = 'E:/Projects/PythonProjects/FundAnalysis'
-    # with open(project_path + '/data/temp/funds_tsne.json', 'w', encoding='UTF-8') as wp:
-    #     json.dump(funds, wp)
-    # print('over')
+    num_top = 10
+    m_ids = []
+    for f_id in common.fund_ids[:10]:
+        m_ids += common.fund_manager_dict[f_id]
+    new_m_ids = fund_manager.get_manager_ranks(m_ids, weights, num_top)
+    all_m_ids = list(set(new_m_ids + m_ids))
+    managers = fund_manager.get_manager_feature(all_m_ids)
+    diff_m_ids = set(all_m_ids) - set(m_ids)
+    for m_id in diff_m_ids:
+        managers[m_id]['other'] = True
+    f_ids = []
+    for m_id in all_m_ids:
+        f_ids += common.manager_fund_dict[m_id]
+    f_ids = list(set(f_ids))
+    funds = get_fund_t_sne(f_ids)
+    with open(project_path + '/data/temp/funds_tsne.json', 'w', encoding='UTF-8') as wp:
+        json.dump(funds, wp)
+    print('over')

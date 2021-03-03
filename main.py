@@ -33,14 +33,21 @@ def get_view_funds():
 @app.route('/get_manager_fund_local', methods=['POST'])
 def get_manager_fund_local():
     _json = request.get_json()
+    weights = _json['weights']
+    num_top = _json['num_top']
     m_ids = []
     for f_id in _json['f_ids']:
         m_ids += common.fund_manager_dict[f_id]
+    new_m_ids = fund_manager.get_manager_ranks(m_ids, weights, num_top)
+    all_m_ids = list(set(new_m_ids + m_ids))
+    managers = fund_manager.get_manager_feature(all_m_ids)
+    diff_m_ids = set(all_m_ids) - set(m_ids)
+    for m_id in diff_m_ids:
+        managers[m_id]['other'] = True
     f_ids = []
-    for m_id in m_ids:
+    for m_id in all_m_ids:
         f_ids += common.manager_fund_dict[m_id]
     f_ids = list(set(f_ids))
-    managers = fund_manager.get_manager_feature(m_ids)
     funds = fund_data.get_fund_t_sne(f_ids)
     return {'funds': funds, 'managers': managers}
 

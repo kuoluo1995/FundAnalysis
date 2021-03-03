@@ -56,8 +56,25 @@ def get_manager_feature(m_ids):
                         'amcs': common.manager_features[m_id]['amcs']}
     return result
 
-def get_manager_name():
-    pass
+
+def get_manager_ranks(m_ids, weights, num_top):
+    manager_dict = {}
+    for m_id in m_ids:
+        ranks = {}
+        managers = common.global_manager_features
+        for _id, manager in managers.items():
+            _sum = 0
+            for _name, _v in weights.items():
+                _sum += float(weights[_name]) * (manager[_name] - common.global_manager_features[m_id][_name])
+            ranks[_id] = _sum
+        ranks = sorted(ranks.items(), key=lambda v: v[1])[:num_top]
+        for _id, _sum in ranks:
+            if _id in manager_dict and manager_dict[_id] < _sum:
+                continue
+            manager_dict[_id] = _sum
+    manager_dict = sorted(manager_dict.items(), key=lambda v: v[1])[:num_top]
+    return [m_id for m_id, _ in manager_dict]
+
 
 # def get_manager_name():
 #     manager_dict = {}
