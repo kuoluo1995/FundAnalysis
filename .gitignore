@@ -69,4 +69,5 @@ fabric.properties
 data/*
 data_collecting/*
 images
+*.pyc
 node_modules
