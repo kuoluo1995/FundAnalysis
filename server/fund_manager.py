@@ -1,10 +1,61 @@
 import numpy as np
 import sys
 
-from tools.show_tool import dict2labels, dict2values, object_merge_fund
-
 sys.path.append('/home/kuoluo/projects/FundAnalysis/')
 from server import common
+from models import tsne
+
+
+def get_manager_feature(m_ids):
+    manager_dict = {}
+    max_return = None
+    max_car = None
+    max_risk = None
+    max_size = min_size = None
+    max_alpha = None
+    max_beta = None
+    max_sharp_ratio = None
+    max_information_ratio = None
+    max_days = min_days = None
+    for m_id in m_ids:
+        feature = common.manager_features[m_id]
+        if max_return is None or max_return < abs(feature['nav_return']):
+            max_return = abs(feature['nav_return'])
+        if max_car is None or max_car < abs(feature['car']):
+            max_car = abs(feature['car'])
+        if max_risk is None or max_risk < feature['risk']:
+            max_risk = feature['risk']
+        if max_size is None or max_size < feature['size']:
+            max_size = feature['size']
+        if min_size is None or min_size > feature['size']:
+            min_size = feature['size']
+        if max_days is None or max_days < feature['days']:
+            max_days = feature['days']
+        if min_days is None or min_days > feature['days']:
+            min_days = feature['days']
+        if max_alpha is None or max_alpha < abs(feature['alpha']):
+            max_alpha = abs(feature['alpha'])
+        if max_beta is None or max_beta < abs(feature['beta']):
+            max_beta = abs(feature['beta'])
+        if max_sharp_ratio is None or max_sharp_ratio < abs(feature['sharp_ratio']):
+            max_sharp_ratio = abs(feature['sharp_ratio'])
+        if max_information_ratio is None or max_information_ratio < abs(feature['information_ratio']):
+            max_information_ratio = abs(feature['information_ratio'])
+        manager_dict[m_id] = feature
+    x = tsne.get_manager_feature(manager_dict, max_return, max_car, max_risk, max_size, min_size, max_alpha, max_beta,
+                                 max_sharp_ratio, max_information_ratio, max_days, min_days)
+    num_manager = len(m_ids)
+    y, dy, iy, gains = tsne.get_y(num_manager, 2)
+    p = tsne.get_p(np.array(x))
+    data_2d, dy, iy, gains = tsne.t_sne(p, num_manager, y, dy, iy, gains, 2)
+    result = {}
+    for i, m_id in enumerate(m_ids):
+        result[m_id] = {'loc': (data_2d[i][0], data_2d[i][1]), 'days': common.manager_features[m_id]['days'],
+                        'name': common.manager_dict[m_id]['name'],
+                        'size': common.manager_features[m_id]['days'] / max_days,
+                        'amcs': common.manager_features[m_id]['amcs']}
+    return result
+
 
 # def get_manager_name():
 #     manager_dict = {}
@@ -101,22 +152,23 @@ from server import common
 #     return manager_dict
 
 
-# if __name__ == '__main__':
-#     manager_name_dict = get_manager_name()
-#     manager_time_dict, start_date, end_date = get_manager_times(manager_name_dict.keys())
-#     # 基金经理规模
-#     manager_asset_dict = get_manager_asset(manager_name_dict.keys())
-#     manager_asset = object_merge_fund(manager_asset_dict, merge_type='sum', sort_type='key')
-#     all_labels = dict2labels(manager_asset, is_sort=True)
-#     value_dict = dict2values(manager_asset, all_labels, none_value='previous')
-#     # 基金经理净值
-#     manager_nav_dict = get_manager_nav(manager_name_dict.keys())
-#     manager_nav = object_merge_fund(manager_nav_dict, merge_type='mean', sort_type='key')
-#     all_labels = dict2labels(manager_nav, is_sort=True)
-#     value_dict = dict2values(manager_nav, all_labels, none_value='previous')
-#     # 基金经理收益，按时间切片取出就可以直接看收益排行
-#     manager_income_dict = get_manager_income(manager_name_dict.keys(), start_date, end_date)
-#     manager_income = object_merge_fund(manager_income_dict, merge_type='mean', sort_type='key')
-#     all_labels = dict2labels(manager_income, is_sort=True)
-#     value_dict = dict2values(manager_income, all_labels, none_value='previous')
-#     print('over')
+if __name__ == '__main__':
+    get_manager_feature(list(common.manager_dict.keys()))
+    #     manager_name_dict = get_manager_name()
+    #     manager_time_dict, start_date, end_date = get_manager_times(manager_name_dict.keys())
+    #     # 基金经理规模
+    #     manager_asset_dict = get_manager_asset(manager_name_dict.keys())
+    #     manager_asset = object_merge_fund(manager_asset_dict, merge_type='sum', sort_type='key')
+    #     all_labels = dict2labels(manager_asset, is_sort=True)
+    #     value_dict = dict2values(manager_asset, all_labels, none_value='previous')
+    #     # 基金经理净值
+    #     manager_nav_dict = get_manager_nav(manager_name_dict.keys())
+    #     manager_nav = object_merge_fund(manager_nav_dict, merge_type='mean', sort_type='key')
+    #     all_labels = dict2labels(manager_nav, is_sort=True)
+    #     value_dict = dict2values(manager_nav, all_labels, none_value='previous')
+    #     # 基金经理收益，按时间切片取出就可以直接看收益排行
+    #     manager_income_dict = get_manager_income(manager_name_dict.keys(), start_date, end_date)
+    #     manager_income = object_merge_fund(manager_income_dict, merge_type='mean', sort_type='key')
+    #     all_labels = dict2labels(manager_income, is_sort=True)
+    #     value_dict = dict2values(manager_income, all_labels, none_value='previous')
+    print('over')

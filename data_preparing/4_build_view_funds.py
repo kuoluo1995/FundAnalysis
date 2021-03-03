@@ -50,7 +50,6 @@ def get_fund(file):
         fund_dict[_record['datetime']]['size'] = _record['net_asset']
     for _record in fund['holder_structure']:
         fund_dict[_record['date']]['instl_weight'] = _record['instl_weight'] / 100
-        fund_dict[_record['date']]['retail_weight'] = _record['retail_weight'] / 100
     for _record in fund['indicators_records']:
         fund_dict[_record['datetime']]['alpha'] = _record['total_alpha']
         fund_dict[_record['datetime']]['beta'] = _record['total_beta']
@@ -129,19 +128,55 @@ def get_fund(file):
 
     new_result = {}
     pre_value = None
+    last_date = None
     for _date, _value in result.items():
         if int(_date) < 20100930:
             continue
         if (_value['stock'] + _value['bond'] + _value['cash'] + _value['other']) == 0.0:
             return None
-        new_result[_date] = _value
-    if pre_value is not None:
-        new_result[pre_value['date']] = pre_value['value']
-    for _date, _value in new_result.items():
-        if (len(_value) == 22 and 'instl_weight' not in _value) or len(_value) == 24:
+        if _date[4:] not in ['0331', '0630', '0930', '1231']:
+            pre_value = _value
             continue
-        else:
-            print(file + ' ' + _date)
+        if pre_value is not None:
+            temp = {}
+            for _d, _v in pre_value['detail_unit_navs'].items():
+                temp[_d] = _v
+            for _d, _v in _value['detail_unit_navs'].items():
+                temp[_d] = _v
+            _value['detail_unit_navs'] = temp
+            temp = {}
+            for _d, _v in pre_value['detail_acc_navs'].items():
+                temp[_d] = _v
+            for _d, _v in _value['detail_acc_navs'].items():
+                temp[_d] = _v
+            _value['detail_acc_navs'] = temp
+            temp = {}
+            for _d, _v in pre_value['detail_hs300s'].items():
+                temp[_d] = _v
+            for _d, _v in _value['detail_hs300s'].items():
+                temp[_d] = _v
+            _value['detail_hs300s'] = temp
+            pre_value = None
+        new_result[_date] = _value
+        last_date = _date
+    if len(new_result) == 1 and last_date[4:] not in ['0630', '1231']:
+        return None
+    for _date, _value in new_result.items():
+        if 'manager_ids' not in _value:
+            return None
+        if 'holding' not in _value:
+            return None
+        if 'nav_return' not in _value or _value['nav_return'] > 2:
+            return None
+        if 'risk' not in _value or _value['risk'] > 2:
+            return None
+        if 'information_ratio' not in _value or _value['information_ratio'] < -20:
+            return None
+        if 'alpha' not in _value or _value['alpha'] > 3.3:
+            return None
+        if 'beta' not in _value or _value['beta'] < -10 or _value['beta'] > 2:
+            return None
+        if len(_value) != 22 and len(_value) != 23:
             return None
     return new_result
 

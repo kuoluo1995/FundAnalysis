@@ -26,7 +26,8 @@ def get_view_funds():
     f_ids = _json['f_ids']
     start_date = _json['start_date']
     end_date = _json['end_date']
-    return fund_data.get_view_fund(f_ids, start_date, end_date)
+    details, summary = fund_data.get_view_fund(f_ids, start_date, end_date)
+    return {'detail': details, 'summary': summary}
 
 
 @app.route('/get_manager_fund_local', methods=['POST'])
@@ -39,17 +40,17 @@ def get_manager_fund_local():
     for m_id in m_ids:
         f_ids += common.manager_fund_dict[m_id]
     f_ids = list(set(f_ids))
-    return fund_data.get_fund_t_sne(f_ids)
+    managers = fund_manager.get_manager_feature(m_ids)
+    funds = fund_data.get_fund_t_sne(f_ids)
+    return {'funds': funds, 'managers': managers}
 
 
 @app.route('/get_fund_ranks', methods=['POST'])
 def get_fund_ranks():
     _json = request.get_json()
-    f_ids = _json['f_ids']
-    num_top = _json['num_top']
-    weight_keys = _json['weight_keys']
-    fund_ids = fund_data.get_fund_ranks(f_ids, num_top)
-    return fund_data.get_fund_last_dict(fund_ids, weight_keys)
+    weights = _json['weights']
+    fund_ids = fund_data.get_fund_ranks(weights)
+    return fund_data.get_fund_last_dict(fund_ids, list(weights.keys()))
 
 
 if __name__ == '__main__':

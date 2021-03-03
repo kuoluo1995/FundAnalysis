@@ -128,50 +128,62 @@ def get_y(n, d):
     return y, dy, iy, gains
 
 
-def get_fund_feature(fund_datas, max_size, min_nav_len):
+def get_fund_feature(fund_datas, max_return, max_risk, max_sharp_ratio, max_information_ratio, max_alpha, max_beta,
+                     max_size, min_size):
     features = []
     clasz = []
     for f_id, _value in fund_datas.items():
         x = []
         y = []
-        for _name, _v in _value.items():
-            if _name == 'size':
-                x.append(_v / max_size)
-            elif _name == 'detail_unit_navs':
-                _v = list(_v.items())[-min_nav_len:]
-                for _d, _n in _v:
-                    x.append(_n)
-            elif _name != 'manager_ids' and _name != 'detail_acc_navs' and _name != 'detail_hs300s':
-                x.append(_v)
-            elif _name == 'manager_ids':
-                for m_id, title in _v.items():
-                    y.append(m_id)
+        x.append(_value['nav_return'] / max_return)
+        x.append(_value['risk'] / max_risk)
+        x.append(_value['sharp_ratio'] / max_sharp_ratio)
+        x.append(_value['information_ratio'] / max_information_ratio)
+        x.append(_value['alpha'] / max_alpha)
+        x.append(_value['beta'] / max_beta)
+        x.append((_value['size'] - min_size) / (max_size - min_size))
+        for m_id, _ in _value['manager_ids'].items():
+            y.append(m_id)
         features.append(x)
         clasz.append(y)
     return features, clasz
 
 
-def update_features(features, clasz, funds, date, max_size, min_nav_len):
-    index_funds = {}
-    i = -1
-    for f_id, fund in funds.items():
-        i += 1
+def get_manager_feature(manager_dict, max_return, max_car, max_risk, max_size, min_size, max_alpha, max_beta,
+                        max_sharp_ratio, max_information_ratio, max_days, min_days):
+    features = []
+    for m_id, _value in manager_dict.items():
         x = []
-        y = []
+        x.append(_value['nav_return'] / max_return)
+        x.append(_value['car'] / max_car)
+        x.append(_value['risk'] / max_risk)
+        x.append((_value['size'] - min_size) / (max_size - min_size))
+        x.append((_value['days'] - min_days) / (max_days - min_days))
+        x.append(_value['alpha'] / max_alpha)
+        x.append(_value['beta'] / max_beta)
+        x.append(_value['sharp_ratio'] / max_sharp_ratio)
+        x.append(_value['information_ratio'] / max_information_ratio)
+        features.append(x)
+    return features
+
+
+def update_features(features, clasz, funds, date, max_return, max_risk, max_sharp_ratio, max_information_ratio,
+                    max_alpha, max_beta, max_size, min_size):
+    index_funds = {}
+    for i, (f_id, fund) in enumerate(funds.items()):
         if date not in fund:
             continue
-        for _name, _v in fund[date].items():
-            if _name == 'size':
-                x.append(_v / max_size)
-            elif _name == 'detail_unit_navs':
-                _v = list(_v.items())[-min_nav_len:]
-                for _d, _n in _v:
-                    x.append(_n)
-            elif _name != 'manager_ids' and _name != 'detail_acc_navs' and _name != 'detail_hs300s':
-                x.append(_v)
-            elif _name == 'manager_ids':
-                for m_id, title in _v.items():
-                    y.append(m_id)
+        x = []
+        y = []
+        x.append(fund[date]['nav_return'] / max_return)
+        x.append(fund[date]['risk'] / max_risk)
+        x.append(fund[date]['sharp_ratio'] / max_sharp_ratio)
+        x.append(fund[date]['information_ratio'] / max_information_ratio)
+        x.append(fund[date]['alpha'] / max_alpha)
+        x.append(fund[date]['beta'] / max_beta)
+        x.append((fund[date]['size'] - min_size) / (max_size - min_size))
+        for m_id, _ in fund[date]['manager_ids'].items():
+            y.append(m_id)
         features[i] = x
         clasz[i] = y
         index_funds[i] = f_id

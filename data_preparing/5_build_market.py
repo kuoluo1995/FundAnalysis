@@ -29,8 +29,6 @@ def get_market_fund_sector_by_report(files):
         with open(project_path + '/data/view_funds/' + file, 'r', encoding='UTF-8') as fp:
             view_fund = json.load(fp)
         for _date, _value in view_fund.items():
-            if _date[-4:] not in ['0331', '0630', '0930', '1231']:
-                continue
             date_set.add(_date)
             for _s, _v in _value['holding_values'].items():
                 sector_set.add(_s)

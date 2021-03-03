@@ -1,10 +1,9 @@
 import json
 import os
-import numpy as np
 
 project_path = '/home/kuoluo/projects/FundAnalysis'
 # project_path = 'E:/Projects/PythonProjects/FundAnalysis'
-fund_files = os.listdir(project_path + '/data/view_funds')
+fund_files = os.listdir(project_path + '/data/fund_features')
 
 
 def check_time(_attr, start_date, end_date, str_date):
@@ -25,7 +24,7 @@ def build_fund_manager_dict(files):
         with open(project_path + '/data/fund_features/' + file, 'r', encoding='UTF-8') as fp:
             fund = json.load(fp)
         for _date, _value in fund.items():
-            for m_id, _title in _value['manager_ids'].items():
+            for m_id, _v in _value['manager_ids'].items():
                 if m_id not in manager_dict:
                     manager_dict[m_id] = {}
                 if _date not in manager_dict[m_id]:
@@ -39,9 +38,11 @@ print('start save manager')
 fund_manager = build_fund_manager_dict(fund_files)
 i = 1
 _len = len(fund_manager)
-for m_id, funds in fund_manager.items():
+for m_id, date_funds in fund_manager.items():
+    date_funds = sorted(date_funds.items(), key=lambda d: int(d[0]))
+    date_funds = {date: value for date, value in date_funds}
     with open(project_path + '/data/managers/' + m_id + '.json', 'w') as wp:
-        json.dump(funds, wp)
+        json.dump(date_funds, wp)
     print('\rsaving manager:{}/{} {:.2f}%'.format(i, _len, i * 100 / _len), end='', flush=True)
     i += 1
 print()
