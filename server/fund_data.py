@@ -103,7 +103,8 @@ def get_view_fund(fund_ids, start_date, end_date):
             if temp_fund[_date]['risk'] == 0:
                 temp_fund[_date]['risk'] = 0
             else:
-                temp_fund[_date]['risk'] = temp_fund[_date]['risk'] / max_risk + 1
+                temp_fund[_date]['risk'] = temp_fund[_date]['risk'] / max_risk + 0.1
+            attributes_dict[f_id]['risk'].append(temp_fund[_date]['risk'])
             temp_fund[_date]['sharp_ratio'] = temp_fund[_date]['sharp_ratio'] / max_sharp_ratio
             attributes_dict[f_id]['sharp_ratio'].append(temp_fund[_date]['sharp_ratio'])
             temp_fund[_date]['information_ratio'] = temp_fund[_date]['information_ratio'] / max_information_ratio
@@ -112,8 +113,8 @@ def get_view_fund(fund_ids, start_date, end_date):
             attributes_dict[f_id]['alpha'].append(temp_fund[_date]['alpha'])
             temp_fund[_date]['beta'] = temp_fund[_date]['beta'] / max_beta
             attributes_dict[f_id]['beta'].append(temp_fund[_date]['beta'])
-            temp_fund[_date]['size'] = (temp_fund[_date]['size'] - min_size) / (max_size - min_size) + 0.2
-            attributes_dict[f_id]['size'].append(temp_fund[_date]['size'] - 0.2)
+            temp_fund[_date]['size'] = (temp_fund[_date]['size'] - min_size) / (max_size - min_size) + 0.1
+            attributes_dict[f_id]['size'].append(temp_fund[_date]['size'])
             detail_nav_return = {}
             detail_car = {}
             for _d, _nav in _value['detail_unit_navs'].items():
@@ -216,13 +217,15 @@ def get_fund_ranks(weights):
 
 def get_fund_last_dict(fund_ids, keys):
     fund_list = []
-    for f_id in fund_ids:
-        temp = {'id': f_id}
+    for i, f_id in enumerate(fund_ids):
+        temp = {'key': i + 1, 'id': f_id}
         fund = common.get_feature_fund_json(f_id)
         values = list(fund.items())[-1][1]
         for key in keys:
             if 'car' == key:
-                temp[key] = values['nav_return'] - values['hs300_return']
+                temp[key] = round(values['nav_return'] - values['hs300_return'], 4)
+            elif type(values[key]) is float:
+                temp[key] = round(values[key], 4)
             else:
                 temp[key] = values[key]
         fund_list.append(temp)
@@ -233,36 +236,37 @@ if __name__ == '__main__':
     result = {}
     # project_path = 'E:/Projects/PythonProjects/FundAnalysis'
     project_path = '/home/kuoluo/projects/FundAnalysis'
-    # pre_f_id = '007590'
-    # for f_id in common.fund_ids:
-    #     min_start_date, max_end_date = get_fund_time_border([f_id, pre_f_id])
-    #     _detail, _last = get_view_fund([f_id, pre_f_id], min_start_date, max_end_date)
-    #     result[f_id] = {'detail': _detail[f_id], 'total': _last[f_id]}
-    #     pre_f_id = f_id
-    # for f_id, _value in result.items():
-    #     with open(project_path + '/data/temp/funds/' + f_id + '.json', 'w', encoding='UTF-8') as wp:
-    #         json.dump(_value, wp)
-    # print('over')
-    weights = {'stock': 1.0, 'bond': 1.0, 'cash': 1.0, 'other': 1.0, 'size': 1.0, 'alpha': 1.0, 'beta': 1.0,
-               'sharp_ratio': 1.0, 'max_drop_down': 1.0, 'information_ratio': 1.0, 'nav_return': 1.0, 'risk': 1.0,
-               'instl_weight': 1.0, 'car': 1.0}
+    pre_f_id = '007590'
+    for f_id in common.fund_ids:
+        min_start_date, max_end_date = get_fund_time_border([f_id, pre_f_id])
+        _detail, _last = get_view_fund([f_id, pre_f_id], min_start_date, max_end_date)
+        result[f_id] = {'detail': _detail[f_id], 'total': _last[f_id]}
+        pre_f_id = f_id
+    for f_id, _value in result.items():
+        with open(project_path + '/data/temp/funds/' + f_id + '.json', 'w', encoding='UTF-8') as wp:
+            json.dump(_value, wp)
+    print('over')
+    # weights = {'stock': 1.0, 'bond': 1.0, 'cash': 1.0, 'other': 1.0, 'size': 1.0, 'alpha': 1.0, 'beta': 1.0,
+    #            'sharp_ratio': 1.0, 'max_drop_down': 1.0, 'information_ratio': 1.0, 'nav_return': 1.0, 'risk': 1.0,
+    #            'instl_weight': 1.0, 'car': 1.0}
     # fund_ids = get_fund_ranks(weights)
     # get_fund_last_dict(fund_ids, list(weights.keys()))
-    num_top = 10
-    m_ids = []
-    for f_id in common.fund_ids[:10]:
-        m_ids += common.fund_manager_dict[f_id]
-    new_m_ids = fund_manager.get_manager_ranks(m_ids, weights, num_top)
-    all_m_ids = list(set(new_m_ids + m_ids))
-    managers = fund_manager.get_manager_feature(all_m_ids)
-    diff_m_ids = set(all_m_ids) - set(m_ids)
-    for m_id in diff_m_ids:
-        managers[m_id]['other'] = True
-    f_ids = []
-    for m_id in all_m_ids:
-        f_ids += common.manager_fund_dict[m_id]
-    f_ids = list(set(f_ids))
-    funds = get_fund_t_sne(f_ids)
-    with open(project_path + '/data/temp/funds_tsne.json', 'w', encoding='UTF-8') as wp:
-        json.dump(funds, wp)
-    print('over')
+    # print('over')
+    # num_top = 10
+    # m_ids = []
+    # for f_id in common.fund_ids[:10]:
+    #     m_ids += common.fund_manager_dict[f_id]
+    # new_m_ids = fund_manager.get_manager_ranks(m_ids, weights, num_top)
+    # all_m_ids = list(set(new_m_ids + m_ids))
+    # managers = fund_manager.get_manager_feature(all_m_ids)
+    # diff_m_ids = set(all_m_ids) - set(m_ids)
+    # for m_id in diff_m_ids:
+    #     managers[m_id]['other'] = True
+    # f_ids = []
+    # for m_id in all_m_ids:
+    #     f_ids += common.manager_fund_dict[m_id]
+    # f_ids = list(set(f_ids))
+    # funds = get_fund_t_sne(f_ids)
+    # with open(project_path + '/data/temp/funds_tsne.json', 'w', encoding='UTF-8') as wp:
+    #     json.dump(funds, wp)
+    # print('over')
