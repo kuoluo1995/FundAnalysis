@@ -111,11 +111,6 @@ def get_fund(file):
             result[_date]['detail_unit_navs'] = detail_unit_nav
             result[_date]['detail_acc_navs'] = detail_acc_nav
             result[_date]['detail_hs300s'] = detail_hs300
-            detail_unit_nav_list = list(detail_unit_nav.values())
-            result[_date]['nav_return'] = detail_unit_nav_list[-1] / detail_unit_nav_list[0] - 1
-            detail_hs300_list = list(detail_hs300.values())
-            result[_date]['hs300_return'] = detail_hs300_list[-1] / detail_hs300_list[0] - 1
-            result[_date]['risk'] = np.std(list(detail_unit_nav.values()), ddof=0)
             detail_unit_nav = {}
             detail_acc_nav = {}
             detail_hs300 = {}
@@ -159,16 +154,12 @@ def get_fund(file):
             pre_value = None
         new_result[_date] = _value
         last_date = _date
-    if len(new_result) == 1 and last_date[4:] not in ['0630', '1231']:
+    if len(new_result) == 1 and last_date[4:] not in ['0331', '0630', '0930', '1231']:
         return None
-    for _date, _value in new_result.items():
+    for i, (_date, _value) in enumerate(new_result.items()):
         if 'manager_ids' not in _value:
             return None
         if 'holding' not in _value:
-            return None
-        if 'nav_return' not in _value or _value['nav_return'] > 2:
-            return None
-        if 'risk' not in _value or _value['risk'] > 2:
             return None
         if 'information_ratio' not in _value or _value['information_ratio'] < -20:
             return None
@@ -176,8 +167,41 @@ def get_fund(file):
             return None
         if 'beta' not in _value or _value['beta'] < -10 or _value['beta'] > 2:
             return None
-        if len(_value) != 22 and len(_value) != 23:
+        if (_date[4:] in ['0331', '0930'] and len(_value) != 19) or (
+                _date[4:] in ['0630', '1231'] and len(_value) != 20):
             return None
+    new_result_list = list(new_result.items())
+    for i, (_date, _value) in enumerate(new_result.items()):
+        _value['risk'] = np.std(list(_value['detail_unit_navs'].values()), ddof=0)
+        if _value['risk'] > 2:
+            return None
+        pre_nav = None
+        temp = {}
+        for _d, _v in _value['detail_unit_navs'].items():
+            if pre_nav is None:
+                temp[_d] = 0
+            else:
+                temp[_d] = (_v - pre_nav) / pre_nav
+            pre_nav = _v
+        _value['detail_change_rate'] = temp
+        detail_unit_navs_list = list(_value['detail_unit_navs'].items())
+        _value['one_quarter_return'] = detail_unit_navs_list[-1][1] / detail_unit_navs_list[0][1] - 1
+        # if _value['one_quarter_return'] > 1.2:
+        #     return None
+        detail_hs300s_list = list(_value['detail_hs300s'].items())
+        _value['one_quarter_hs300_return'] = detail_hs300s_list[-1][1] / detail_hs300s_list[0][1] - 1
+        if i < 3:
+            continue
+        pre_detail_unit_navs_list = list(new_result_list[i - 3][1]['detail_unit_navs'].items())
+        pre_detail_hs300s_list = list(new_result_list[i - 3][1]['detail_hs300s'].items())
+        _value['one_year_return'] = detail_unit_navs_list[-1][1] / pre_detail_unit_navs_list[0][1] - 1
+        _value['one_year_hs300_return'] = detail_hs300s_list[-1][1] / pre_detail_hs300s_list[0][1] - 1
+        if i < 11:
+            continue
+        pre_detail_unit_navs_list = list(new_result_list[i - 11][1]['detail_unit_navs'].items())
+        pre_detail_hs300s_list = list(new_result_list[i - 11][1]['detail_hs300s'].items())
+        _value['three_year_return'] = detail_unit_navs_list[-1][1] / pre_detail_unit_navs_list[0][1] - 1
+        _value['three_year_hs300_return'] = detail_hs300s_list[-1][1] / pre_detail_hs300s_list[0][1] - 1
     return new_result
 
 

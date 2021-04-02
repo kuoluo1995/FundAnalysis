@@ -25,7 +25,12 @@ def get_fund_feature(file):
         _value.pop('holding_values')
         _value.pop('detail_acc_navs')
         _value.pop('acc_nav')
-        view_fund[_date]['car'] = _value['nav_return'] - _value['hs300_return']
+        _value.pop('detail_change_rate')
+        view_fund[_date]['one_quarter_car'] = _value['one_quarter_return'] - _value['one_quarter_hs300_return']
+        if 'one_year_return' in _value:
+            view_fund[_date]['one_year_car'] = _value['one_year_return'] - _value['one_year_hs300_return']
+        if 'three_year_return' in _value:
+            view_fund[_date]['three_year_car'] = _value['three_year_return'] - _value['three_year_hs300_return']
         for m_id, _ in _value['manager_ids'].items():
             t = (datetime.strptime(_date, '%Y%m%d') - datetime.strptime(manager_dict[m_id]['start_date'],
                                                                         '%Y%m%d')).days

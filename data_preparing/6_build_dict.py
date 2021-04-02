@@ -1,12 +1,23 @@
 import json
 import os
+import sys
+from pypinyin import lazy_pinyin
 from datetime import datetime
 from collections import defaultdict
+
+sys.path.append('/home/kuoluo/projects/FundAnalysis/')
+from tools import color_tool
 
 # project_path = 'E:/Projects/PythonProjects/FundAnalysis'
 project_path = '/home/kuoluo/projects/FundAnalysis'
 fund_files = os.listdir(project_path + '/data/view_funds')
-
+# with open(project_path + '/data/dictionary/weight_key.json', 'r', encoding='UTF-8') as fp:
+#     weight_key = json.load(fp)
+# weight_keys = {}
+# for _key in weight_key:
+#     weight_keys[_key] = {'cn_name': '', 'en_name': ''}
+# with open(project_path + '/data/dictionary/weight_key.json', 'w', encoding='UTF-8') as wp:
+#     json.dump(weight_keys, wp)
 
 def build_dict(files):
     manager_dict = {}
@@ -47,8 +58,12 @@ def build_dict(files):
                 continue
             count = manager_dict[_manager['id']]
             if type(count) is int:
-                manager_dict[_manager['id']] = {'name': _manager['name'], 'count': count, 'start_date': 20200000,
-                                                'end_date': 0, 'amcs': dict()}
+                pinyin = lazy_pinyin(_manager['name'])
+                pinyin[0] = pinyin[0].capitalize()
+                if len(pinyin) > 1:
+                    pinyin[1] = pinyin[1].capitalize()
+                manager_dict[_manager['id']] = {'cn_name': _manager['name'], 'count': count, 'start_date': 20200000,
+                                                'end_date': 0, 'amcs': dict(), 'en_name': ''.join(pinyin)}
             if int(manager_dict[_manager['id']]['start_date']) > int(_manager['start_date']):
                 manager_dict[_manager['id']]['start_date'] = _manager['start_date']
             if int(manager_dict[_manager['id']]['end_date']) < int(_manager['end_date']):
@@ -65,15 +80,16 @@ def build_dict(files):
         fund_manager[f_id] = list(_list)
     for m_id, _list in manager_fund.items():
         manager_fund[m_id] = list(_list)
+    manager_list = sorted(manager_dict.items(), key=lambda v: v[1]['count'], reverse=True)
+    manager_dict = {m_id: {'index': i, **_} for i, (m_id, _) in enumerate(manager_list)}
+    sector_list = sorted(sector_dict.items(), key=lambda v: v[1], reverse=True)
+    sector_colors = color_tool.get_hex_colors_by_num(len(sector_list))
+    sector_dict = {m_id: {'color': sector_colors[i], 'en_name': ''} for i, (m_id, _) in enumerate(sector_list)}
     return fund_dict, manager_dict, sector_dict, fund_manager, manager_fund
 
 
 print('start save dict')
 fund_dict, manager_dict, sector_dict, fund_manager, manager_fund = build_dict(fund_files)
-manager_list = sorted(manager_dict.items(), key=lambda v: v[1]['count'], reverse=True)
-manager_dict = {m_id: {'index': i, **_} for i, (m_id, _) in enumerate(manager_list)}
-sector_list = sorted(sector_dict.items(), key=lambda v: v[1], reverse=True)
-sector_dict = {m_id: i for i, (m_id, _) in enumerate(sector_list)}
 with open(project_path + '/data/dictionary/fund_dict.json', 'w') as wp:
     json.dump(fund_dict, wp)
 with open(project_path + '/data/dictionary/manager_dict.json', 'w') as wp:

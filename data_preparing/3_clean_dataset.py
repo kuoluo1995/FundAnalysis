@@ -44,10 +44,6 @@ for i, _file in enumerate(fund_files):
         continue
     for _record in fund['holding_records']:
         for _v in _record['holdings_list']:
-            # if np.isnan(_v['weight']):
-            #     bad_fund = True
-            # if np.isnan(_v['shares']):
-            #     bad_fund = True
             if np.isnan(_v['market_value']):
                 bad_fund = True
             if _v['order_book_id'][:6] not in stock_sector:
@@ -55,6 +51,8 @@ for i, _file in enumerate(fund_files):
             else:
                 _sector = stock_sector[_v['order_book_id'][:6]]
             _v['sector'] = _sector
+        _record['holdings_list'] = sorted(_record['holdings_list'], key=lambda _h: _h['market_value'], reverse=True)[
+                                   :10]
     if len(fund['holding_records']) == 0 or bad_fund:
         continue
     if not bad_fund:

@@ -3,77 +3,104 @@ import sys
 
 sys.path.append('/home/kuoluo/projects/FundAnalysis/')
 from server import common
-from models import tsne
+from models import tsne, pca
+from tools import color_tool, normal_tool
 
 
-def get_manager_feature(m_ids):
-    manager_dict = {}
-    max_return = None
-    max_car = None
-    max_risk = None
-    max_size = min_size = None
-    max_alpha = None
-    max_beta = None
-    max_sharp_ratio = None
-    max_information_ratio = None
-    max_days = min_days = None
-    for m_id in m_ids:
-        feature = common.manager_features[m_id]
-        if max_return is None or max_return < abs(feature['nav_return']):
-            max_return = abs(feature['nav_return'])
-        if max_car is None or max_car < abs(feature['car']):
-            max_car = abs(feature['car'])
-        if max_risk is None or max_risk < feature['risk']:
-            max_risk = feature['risk']
-        if max_size is None or max_size < feature['size']:
-            max_size = feature['size']
-        if min_size is None or min_size > feature['size']:
-            min_size = feature['size']
-        if max_days is None or max_days < feature['days']:
-            max_days = feature['days']
-        if min_days is None or min_days > feature['days']:
-            min_days = feature['days']
-        if max_alpha is None or max_alpha < abs(feature['alpha']):
-            max_alpha = abs(feature['alpha'])
-        if max_beta is None or max_beta < abs(feature['beta']):
-            max_beta = abs(feature['beta'])
-        if max_sharp_ratio is None or max_sharp_ratio < abs(feature['sharp_ratio']):
-            max_sharp_ratio = abs(feature['sharp_ratio'])
-        if max_information_ratio is None or max_information_ratio < abs(feature['information_ratio']):
-            max_information_ratio = abs(feature['information_ratio'])
-        manager_dict[m_id] = feature
-    x = tsne.get_manager_feature(manager_dict, max_return, max_car, max_risk, max_size, min_size, max_alpha, max_beta,
-                                 max_sharp_ratio, max_information_ratio, max_days, min_days)
-    num_manager = len(m_ids)
-    y, dy, iy, gains = tsne.get_y(num_manager, 2)
-    p = tsne.get_p(np.array(x))
-    data_2d, dy, iy, gains = tsne.t_sne(p, num_manager, y, dy, iy, gains, 2)
+def get_manager_ranks(source_f_ids, weights, start_date, end_date, num_top=10):
+    m_ids = set()
+    for _date, managers in common.manager_fund_dict.items():
+        if int(start_date) <= int(_date) <= int(end_date):
+            for m_id, f_ids in managers.items():
+                for f_id in f_ids:
+                    if f_id in source_f_ids:
+                        m_ids.add(m_id)
+    ranks = {}
+    managers = common.manager_features
+    for _date, manager_features in managers.items():
+        if int(start_date) <= int(_date) <= int(end_date):
+            for _id, _feature in manager_features.items():
+                _sum = 0
+                for _name, _v in weights.items():
+                    if _name not in _feature:
+                        continue
+                    _sum += float(weights[_name]) * _feature[_name]
+                ranks[_id] = _sum
+    ranks = sorted(ranks.items(), key=lambda v: v[1], reverse=True)
+    i = 0
+    new_m_ids = list()
+    for m_id, _ in ranks:
+        if i >= num_top:
+            break
+        if m_id in m_ids:
+            continue
+        new_m_ids.append(m_id)
+        i += 1
+    return list(m_ids), new_m_ids
+
+
+def get_manager_feature(m_ids, start_date, end_date):
+    manager_dict = {m_id: {} for m_id in m_ids}
+    keys = {'one_year_car', 'three_year_car'}
+    for _date, managers in common.manager_features.items():
+        if int(start_date) <= int(_date) <= int(end_date):
+            for m_id in m_ids:
+                if m_id in managers.keys():
+                    if len(manager_dict[m_id]) == 0:
+                        for name, _value in managers[m_id].items():
+                            if 'hs300' in name or 'return' in name:
+                                continue
+                            manager_dict[m_id][name] = list()
+                        manager_dict[m_id]['three_year_car'] = list()
+                        manager_dict[m_id]['one_year_car'] = list()
+                    for name, _value in managers[m_id].items():
+                        if 'hs300' in name or 'return' in name:
+                            continue
+                        manager_dict[m_id][name].append(_value)
+                        keys.add(name)
+    manager_dict = {m_id: {_name: np.mean(_list) for _name, _list in _values.items()} for m_id, _values in
+                    manager_dict.items()}
+
+    min_max_dict = normal_tool.get_max_min_feature(manager_dict, keys)
+    manager_dict = normal_tool.get_normal_feature(manager_dict, min_max_dict)
+    x = tsne.get_manager_feature(manager_dict)
+    data_2d = pca.train(x)
+    colors = color_tool.get_hex_colors_by_num(len(m_ids))
     result = {}
     for i, m_id in enumerate(m_ids):
-        result[m_id] = {'loc': (data_2d[i][0], data_2d[i][1]), 'days': common.manager_features[m_id]['days'],
-                        'name': common.manager_dict[m_id]['name'],
-                        'size': common.manager_features[m_id]['days'] / max_days,
-                        'amcs': common.manager_features[m_id]['amcs']}
+        size = [manager_dict[m_id]['one_quarter_car']['norm']]
+        if not np.isnan(manager_dict[m_id]['one_year_car']['norm']):
+            size.append(manager_dict[m_id]['one_year_car']['norm'])
+        if not np.isnan(manager_dict[m_id]['three_year_car']['norm']):
+            size.append(manager_dict[m_id]['three_year_car']['norm'])
+        result[m_id] = {'loc': [float(data_2d[i][0]), float(data_2d[i][1])], 'days': common.manager_dict[m_id]['days'],
+                        'cn_name': common.manager_dict[m_id]['cn_name'], 'size': np.mean(size), 'color': colors[i],
+                        'en_name': common.manager_dict[m_id]['en_name'], 'id': common.manager_dict[m_id]['index']}
+        if result[m_id]['en_name'] == 'HanDong':
+            result[m_id]['color'] = '#3A9E85'
+        if result[m_id]['en_name'] == 'HuangWei':
+            result[m_id]['color'] = '#6EEBCB'
+        if result[m_id]['en_name'] == 'GouFei':
+            result[m_id]['color'] = '#9E8742'
+        if result[m_id]['en_name'] == 'WangYanfei':
+            result[m_id]['color'] = '#9E8742'
+        # case 1 149 去掉207
+        if result[m_id]['en_name'] == 'ZhaoHang':
+            result[m_id]['color'] = '#e41a1c'
+        if result[m_id]['en_name'] == 'ChenHu':
+            result[m_id]['color'] = '#377eb8'
+        if result[m_id]['en_name'] == 'WangYihuan':
+            result[m_id]['color'] = '#4daf4a'
+        if result[m_id]['en_name'] == 'ChenWeiyan':
+            result[m_id]['color'] = '#984ea3'
+
+        if result[m_id]['id'] == 606:
+            result[m_id]['color'] = '#984ea3'
+        if result[m_id]['id'] == 321:
+            result[m_id]['color'] = '#4daf4a'
+        if result[m_id]['id'] == 417:
+            result[m_id]['color'] = '#377eb8'
     return result
-
-
-def get_manager_ranks(m_ids, weights, num_top):
-    manager_dict = {}
-    for m_id in m_ids:
-        ranks = {}
-        managers = common.global_manager_features
-        for _id, manager in managers.items():
-            _sum = 0
-            for _name, _v in weights.items():
-                _sum += float(weights[_name]) * (manager[_name] - common.global_manager_features[m_id][_name])
-            ranks[_id] = _sum
-        ranks = sorted(ranks.items(), key=lambda v: v[1])[:num_top]
-        for _id, _sum in ranks:
-            if _id in manager_dict and manager_dict[_id] < _sum:
-                continue
-            manager_dict[_id] = _sum
-    manager_dict = sorted(manager_dict.items(), key=lambda v: v[1])[:num_top]
-    return [m_id for m_id, _ in manager_dict]
 
 
 # def get_manager_name():
@@ -172,7 +199,11 @@ def get_manager_ranks(m_ids, weights, num_top):
 
 
 if __name__ == '__main__':
-    get_manager_feature(list(common.manager_dict.keys()))
+    weights = {'one_quarter_return': 1.0, 'one_year_return': 1.0, 'three_year_return': 1.0, 'max_drop_down': 0.0,
+               'risk': 1.0, 'sharp_ratio': 0.0, 'information_ratio': 0.0, 'alpha': 0.0, 'beta': 0.0, 'size': 1.0,
+               'instl_weight': 0.0}
+    m_ids, exet_m_ids = get_manager_ranks(['001740'], weights, '20130425', '20191231')
+    _ = get_manager_feature(list(m_ids) + exet_m_ids, '20130425', '20191231')
     #     manager_name_dict = get_manager_name()
     #     manager_time_dict, start_date, end_date = get_manager_times(manager_name_dict.keys())
     #     # 基金经理规模

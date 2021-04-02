@@ -2,8 +2,15 @@ import numpy as np
 from sklearn.datasets import load_digits
 import matplotlib.pyplot as plt
 import time
+from sklearn import decomposition, manifold
 
 np.random.seed(42)
+
+
+def train(x):
+    tsne = manifold.TSNE(n_components=2, random_state=999)
+    data_2d = tsne.fit_transform(x)
+    return data_2d
 
 
 def cal_pairwise_dist(x):
@@ -128,20 +135,30 @@ def get_y(n, d):
     return y, dy, iy, gains
 
 
-def get_fund_feature(fund_datas, max_return, max_risk, max_sharp_ratio, max_information_ratio, max_alpha, max_beta,
-                     max_size, min_size):
+def get_fund_feature(fund_datas, max_stock, max_bond, max_cash, max_other, max_size, max_alpha,
+                     max_beta, max_sharp_ratio, max_drop_down, max_information_ratio, max_return,
+                     max_risk, max_instl_weight, min_stock, min_bond, min_cash, min_other, min_size,
+                     min_alpha, min_beta, min_sharp_ratio, min_drop_down, min_information_ratio,
+                     min_return, min_risk, min_instl_weight):
     features = []
     clasz = []
     for f_id, _value in fund_datas.items():
         x = []
         y = []
-        x.append(_value['nav_return'] / max_return)
-        x.append(_value['risk'] / max_risk)
-        x.append(_value['sharp_ratio'] / max_sharp_ratio)
-        x.append(_value['information_ratio'] / max_information_ratio)
-        x.append(_value['alpha'] / max_alpha)
-        x.append(_value['beta'] / max_beta)
+        # x.append((_value['stock'] - min_stock) / (max_stock - min_stock))
+        # x.append((_value['bond'] - min_bond) / (max_bond - min_bond))
+        # x.append((_value['cash'] - min_cash) / (max_cash - min_cash))
+        # x.append((_value['other'] - min_other) / (max_other - min_other))
         x.append((_value['size'] - min_size) / (max_size - min_size))
+        x.append((_value['alpha'] - min_alpha) / (max_alpha - min_alpha))
+        x.append((_value['beta'] - min_beta) / (max_beta - min_beta))
+        x.append((_value['sharp_ratio'] - min_sharp_ratio) / (max_sharp_ratio - min_sharp_ratio))
+        x.append((_value['max_drop_down'] - min_drop_down) / (max_drop_down - min_drop_down))
+        x.append(
+            (_value['information_ratio'] - min_information_ratio) / (max_information_ratio - min_information_ratio))
+        # x.append((_value['nav_return'] - min_return) / (max_return - min_return))
+        x.append((_value['risk'] - min_risk) / (max_risk - min_risk))
+        x.append((_value['instl_weight'] - min_instl_weight) / (max_instl_weight - min_instl_weight))
         for m_id, _ in _value['manager_ids'].items():
             y.append(m_id)
         features.append(x)
@@ -149,39 +166,45 @@ def get_fund_feature(fund_datas, max_return, max_risk, max_sharp_ratio, max_info
     return features, clasz
 
 
-def get_manager_feature(manager_dict, max_return, max_car, max_risk, max_size, min_size, max_alpha, max_beta,
-                        max_sharp_ratio, max_information_ratio, max_days, min_days):
+def get_manager_feature(manager_dict):
     features = []
-    for m_id, _value in manager_dict.items():
+    for m_id, _values in manager_dict.items():
         x = []
-        x.append(_value['nav_return'] / max_return)
-        x.append(_value['car'] / max_car)
-        x.append(_value['risk'] / max_risk)
-        x.append((_value['size'] - min_size) / (max_size - min_size))
-        x.append((_value['days'] - min_days) / (max_days - min_days))
-        x.append(_value['alpha'] / max_alpha)
-        x.append(_value['beta'] / max_beta)
-        x.append(_value['sharp_ratio'] / max_sharp_ratio)
-        x.append(_value['information_ratio'] / max_information_ratio)
+        for _name, _value in _values.items():
+            if np.isnan(_value['norm']):
+                x.append(0)
+            else:
+                x.append(_value['norm'])
         features.append(x)
     return features
 
 
-def update_features(features, clasz, funds, date, max_return, max_risk, max_sharp_ratio, max_information_ratio,
-                    max_alpha, max_beta, max_size, min_size):
+def update_features(features, clasz, funds, date, max_stock, max_bond, max_cash, max_other, max_size, max_alpha,
+                    max_beta, max_sharp_ratio, max_drop_down, max_information_ratio, max_return,
+                    max_risk, max_instl_weight, min_stock, min_bond, min_cash, min_other, min_size,
+                    min_alpha, min_beta, min_sharp_ratio, min_drop_down, min_information_ratio,
+                    min_return, min_risk, min_instl_weight):
     index_funds = {}
     for i, (f_id, fund) in enumerate(funds.items()):
         if date not in fund:
             continue
         x = []
         y = []
-        x.append(fund[date]['nav_return'] / max_return)
-        x.append(fund[date]['risk'] / max_risk)
-        x.append(fund[date]['sharp_ratio'] / max_sharp_ratio)
+        # x.append((fund[date]['stock'] - min_stock) / (max_stock - min_stock))
+        # x.append((fund[date]['bond'] - min_bond) / (max_bond - min_bond))
+        # x.append((fund[date]['cash'] - min_cash) / (max_cash - min_cash))
         x.append(fund[date]['information_ratio'] / max_information_ratio)
-        x.append(fund[date]['alpha'] / max_alpha)
-        x.append(fund[date]['beta'] / max_beta)
+        # x.append((fund[date]['other'] - min_other) / (max_other - min_other))
         x.append((fund[date]['size'] - min_size) / (max_size - min_size))
+        x.append((fund[date]['alpha'] - min_alpha) / (max_alpha - min_alpha))
+        x.append((fund[date]['beta'] - min_beta) / (max_beta - min_beta))
+        x.append((fund[date]['sharp_ratio'] - min_sharp_ratio) / (max_sharp_ratio - min_sharp_ratio))
+        x.append((fund[date]['max_drop_down'] - min_drop_down) / (max_drop_down - min_drop_down))
+        x.append(
+            (fund[date]['information_ratio'] - min_information_ratio) / (max_information_ratio - min_information_ratio))
+        # x.append((fund[date]['nav_return'] - min_return) / (max_return - min_return))
+        x.append((fund[date]['risk'] - min_risk) / (max_risk - min_risk))
+        x.append((fund[date]['instl_weight'] - min_instl_weight) / (max_instl_weight - min_instl_weight))
         for m_id, _ in fund[date]['manager_ids'].items():
             y.append(m_id)
         features[i] = x
